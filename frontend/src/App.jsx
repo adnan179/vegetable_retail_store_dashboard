@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import VegetablesPage from './pages/vegetablesPage';
 import GroupPage from './pages/groupPage';
+import CustomersPage from './pages/customersPage';
+import StockPage from './pages/stockPage';
 
 const Layout = () => {
   const location = useLocation();
@@ -26,6 +28,8 @@ const Layout = () => {
           <Route path="/farmers" element={<FarmersPage/>}/>
           <Route path="/vegetables" element={<VegetablesPage/>}/>
           <Route path="/groups" element={<GroupPage/>}/>
+          <Route path="/customers" element={<CustomersPage/>}/>
+          <Route path="/inventory" element={<StockPage/>}/>
         </Route>
       </Routes>
     </>

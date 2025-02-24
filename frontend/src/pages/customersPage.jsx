@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, {useState,useEffect} from 'react';
 import { toast } from 'react-toastify';
+import LoadingSpinner from '../components/loadingSpinner';
+import AddCustomerForm from '../components/addCustomerForm';
 
 const CustomersPage = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -31,7 +33,7 @@ const CustomersPage = () => {
             setFilteredCustomers(data);
     
             const uniqueVillages = [...new Set(data.map(customer => customer.villageName))];
-            const uniqueGroups = [...new Set(data.map(customer => customer.group))];
+            const uniqueGroups = [...new Set(data.map(customer => customer.groupName))];
     
             setVillageNames(uniqueVillages);
             setGroups(uniqueGroups);
@@ -58,7 +60,7 @@ const CustomersPage = () => {
           filteredData = filteredData.filter(customer => customer.villageName === selectedVillage);
         }
         if(selectedGroup){
-          filteredData = filteredData.filter(customer => customer.group === selectedGroup);
+          filteredData = filteredData.filter(customer => customer.groupName === selectedGroup);
         }
     
         setFilteredCustomers(filteredData);
@@ -118,6 +120,67 @@ const CustomersPage = () => {
             </button>
         </div>
         {/* filters */}
+        {/* table */}
+        <table className="bg-white w-full mt-5 border-separate border border-black rounded-lg">
+          <thead>
+            <tr className="text-left text-[16px] text-black">
+              <th className="border border-black p-2">Customer name</th>
+              <th className="border border-black p-2">Village</th>
+              <th className="border border-black pl-2">Phone number</th>
+              <th className="border border-black pl-2">Group</th>
+              <th className="border border-black pl-2">Balance</th>
+              <th className="border border-black pl-2">Created By</th>
+              <th className="border border-black pl-2">Modified By</th>
+              <th className="border border-black p-2"></th>
+              <th className="border border-black p-2"></th>
+            </tr>
+          </thead>
+          {isLoading ? (
+            <LoadingSpinner />) : error ? (
+              <div className="w-full h-full justify-center items-center">
+                <p className="text-red-500 font-medium text-xl">{error}</p>
+              </div>
+            ):(
+              <tbody className="text-[16px]">
+                {filteredCustomers && filteredCustomers.map((customer) => (
+                  <tr key={customer._id} className="text-left">
+                    <td className="border border-black p-2 ">{customer.customerName}</td>
+                    <td className="border border-black p-2 ">{customer.villageName}</td>
+                    <td className="border border-black p-2">{customer.phoneNumber}</td>
+                    <td className="border border-black p-2">{customer.group}</td>
+                    <td className="border border-black p-2 text-red-500 font-medium">{customer.balance}</td>
+                    <td className="border border-black p-2">{customer.createdBy}</td>
+                    <td className="border border-black p-2">{customer.modifiedBy ? customer.modifiedBy : ""}</td>
+                    <td className="border border-black p-2">
+                      <button onClick={() => handleEdit(customer)}className="bg-gray-200 text-[#1E90FF] font-bold cursor-pointer px-4 py-2 rounded">
+                        Edit
+                      </button>
+                    </td>
+                    <td className="border border-black p-2">
+                      <button onClick={(e) =>{
+                        e.stopPropagation();
+                        handleDelete(customer.customerName);
+                      }} className="text-[#D74848] font-bold cursor-pointer px-4 py-2 rounded bg-gray-200">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            )}
+        </table>
+        {/* table */}
+        {isFormOpen && (
+          <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+          <AddCustomerForm
+            onClose={() => setIsFormOpen(false)}
+            fetchCustomers={fetchCustomers}
+            customer={selectedCustomer}
+            isEdit={isEdit}
+            onCloseEdit={() => setIsEdit(false)}
+          />
+        </div>
+        )}
     </section>
   )
 }

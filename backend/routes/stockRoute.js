@@ -6,12 +6,12 @@ router.post("/", async (req,res) => {
     try{
         const {lotId,vegetableName,farmerName,paymentStatus,numberOfBags} = req.body;
     const newStock = new Stock({
-        lotId,
+        lotName,
         vegetableName,
         farmerName,
         paymentStatus,
         numberOfBags,
-        timeStamp: new Date()
+        createdBy
     });
     await newStock.save();
     res.status(201).json({message:"Stock added successfully",stock:newStock});
@@ -29,9 +29,9 @@ router.get("/", async(req,res) => {
     }
 });
 
-router.get("/:lotId", async(req,res) => {
+router.get("/:lotName", async(req,res) => {
     try{
-        const stock = await Stock.findOne({lotId:req.params.lotId});
+        const stock = await Stock.findOne({lotName:req.params.lotName});
         if(!stock) return res.status(404).json({message:"Stock not found"});
         res.status(200).json(stock);
     }catch(err){
@@ -99,13 +99,9 @@ router.get("/month/:year/:month", async (req, res) => {
     }
 });
 
-router.put("/:lotId", async(req,res) => {
+router.put("/:lotName", async(req,res) => {
     try{
-        const updatedStockData = {
-            ...req.body,
-            dateModified: new Date(),
-        }
-        const updatedStock = await Stock.findOneAndUpdate({lotId:req.params.lotId},updatedStockData,{new:true, runValidators:true});
+        const updatedStock = await Stock.findOneAndUpdate({lotName:req.params.lotName},req.body,{new:true, runValidators:true});
         if(!updatedStock) return res.status(404).json({message:"Stock not found"});
         res.status(200).json({message:"Stock updated successfully",stock:updatedStock});
     }catch(err){
@@ -113,9 +109,9 @@ router.put("/:lotId", async(req,res) => {
     }
 });
 
-router.delete("/:lotId", async(req,res) => {
+router.delete("/:lotName", async(req,res) => {
     try{
-        const deletedStock = await Stock.findOneAndDelete({lotId:req.params.lotId});
+        const deletedStock = await Stock.findOneAndDelete({lotName:req.params.lotName});
         if(!deletedStock) return res.status(404).json({message:"Stock not found"});
         res.status(200).json({message:"Stock deleted successfully",stock:deletedStock});
     }catch(err){

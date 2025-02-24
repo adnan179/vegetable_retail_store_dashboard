@@ -19,21 +19,16 @@ const customerSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    balance: {
+    balance:{
         type: Number,
         default: 0
     },
-    timeStamp:{
-        type: Date,
+    createdBy:{
+        type: String,
         required:true,
-        default: new Date()
-    },
-    dateModified: { 
-        type: Date,
     },
     modifiedBy: { 
         type: String, 
-        default: "System"
     }
 });
 

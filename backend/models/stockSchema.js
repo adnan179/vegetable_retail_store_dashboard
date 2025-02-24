@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose");
 
 const stockSchema = new mongoose.Schema({
-    lotId:{
+    lotName:{
         type: String,
         required:true,
         unique:true
@@ -22,17 +22,16 @@ const stockSchema = new mongoose.Schema({
         type: Boolean,
         required:true
     },
-    timeStamp:{
-        type: Date,
-        required:true,
-        default: Date.now,
+    amount:{
+        type: Number,
+        default:0
     },
-    dateModified:{
-        type:Date,
+    createdBy:{
+        type: String,
+        required:true,
     },
     modifiedBY:{
         type: String,
-        default:"system"
     }
 });
 
