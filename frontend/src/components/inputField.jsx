@@ -1,11 +1,12 @@
 import React from "react";
 
-const InputField = ({ label, type = "text", placeholder, value, onChange,inputRef }) => {
+const InputField = ({ label, type = "text", placeholder, value, onChange,inputRef, isDisabled }) => {
   return (
     <div className="flex flex-col w-[300px]">
       {label && <label className="text-sm font-medium text-gray-700 mb-1">{label}</label>}
       <input
         ref={inputRef ? inputRef : undefined}
+        disabled={isDisabled}
         type={type}
         placeholder={placeholder}
         value={value}

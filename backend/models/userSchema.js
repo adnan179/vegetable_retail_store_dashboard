@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum:["admin", "operator"],
         required:true,
-    }
+    },
 });
 
 module.exports = mongoose.model("UserSchema", userSchema);

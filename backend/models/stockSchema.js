@@ -19,7 +19,7 @@ const stockSchema = new mongoose.Schema({
         required:true
     },
     paymentStatus:{
-        type: Boolean,
+        type: String,
         required:true
     },
     amount:{

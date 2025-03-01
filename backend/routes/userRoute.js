@@ -52,6 +52,7 @@ router.post("/add-operator", authenticate,isAdmin, async(req,res) => {
         res.status(200).json({message:"Operator added successfully"})
     }catch(err){
         res.status(500).json({error:err.message});
+        console.log("error adding operator",err.message)
     }
 });
 
@@ -62,8 +63,9 @@ router.get("/operators", authenticate, isAdmin, async(req,res) => {
         res.status(200).json(operators);
     }catch(err){
         res.status(500).json({error:err.message});
+        console.log(err.message);
     }
-})
+});
 
 router.put("/operator/:operatorName", authenticate, isAdmin, async (req,res) => {
     try{
