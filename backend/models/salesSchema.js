@@ -15,10 +15,11 @@ const salesSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
-    pricePerKgs:{
+    pricePerKg:{
         type:Number,
+        required:true
     },
-    lotId:{
+    lotName:{
         type: String,
         required:true
     },
@@ -32,18 +33,17 @@ const salesSchema = new mongoose.Schema({
         required:true
     },
     kuli:{
-        type:Boolean,
+        type:String,
         required:true,
-        default:false
+        default:"false"
+    },
+    createdBy:{
+        type:String,
+        required:true,
     },
     modifiedBY:{
         type: String,
-        default:"system"
     },
-    dateModified:{
-        type: Date,
-        default:Date.now()
-    }
 });
 
 module.exports = mongoose.model("SalesSchema",salesSchema);

@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 const navLinks = [
     {
         title: "Home",
-        link: "/",
+        link: "/dashboard",
         icon: homeIcon,
     },
     {

@@ -12,6 +12,7 @@ import VegetablesPage from './pages/vegetablesPage';
 import GroupPage from './pages/groupPage';
 import CustomersPage from './pages/customersPage';
 import StockPage from './pages/stockPage';
+import SalesPage from './pages/salesPage';
 
 const Layout = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ const Layout = () => {
           <Route path="/groups" element={<GroupPage/>}/>
           <Route path="/customers" element={<CustomersPage/>}/>
           <Route path="/inventory" element={<StockPage/>}/>
+          <Route path="/sales" element={<SalesPage/>}/>
         </Route>
       </Routes>
     </>

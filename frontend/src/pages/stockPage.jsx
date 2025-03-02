@@ -5,7 +5,6 @@ import LoadingSpinner from '../components/loadingSpinner';
 import AddLotForm from '../components/addLotForm';
 import InputField from '../components/inputField';
 import { useAuth } from '../context/AuthContext';
-import closeIcon from "../assets/icons8-close-48.png";
 
 const StockPage = () => {
   const { user } = useAuth();
@@ -23,7 +22,7 @@ const StockPage = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const paymentStatuses = ["due","complete"];
+  const paymentStatuses = ["due","paid"];
   const [editedPaymentStatus, setEditedPaymentStatus] = useState("");
   const [editedAmount, setEditedAmount] = useState(0);
   const [isEditPaymentStatus, setIsEditPaymentStatus] = useState(false);
@@ -37,59 +36,58 @@ const StockPage = () => {
 
   //function to fetch all farmers
   const fetchStocks = async () => {
-    setIsLoading(true);
-    const sortedStocks = (data) =>{
+  setIsLoading(true);
 
-      return data.sort((a, b) => {
-      const parseDate = (str) => {
-        const parts = str.split("-"); // Split by "-"
-        const name = parts[0]; // "Adnan" (not needed)
-        const day = parts[1];
-        const month = parts[2];
-        const year = parts[3];
-  
-        // Extract time and AM/PM
-        const timeParts = parts[4].split(" ");
-        const time = timeParts[0]; // HH:MM
-        const ampm = timeParts[1]; // am/pm
+  //func to sort the data in most recent manner
+  const sortedStocks = (data) =>{
 
-        const [hours, minutes] = time.split(":").map(Number);
+    return data.sort((a, b) => {
+    const parseDate = (str) => {
+      const parts = str.split("-"); // Split by "-"
+      const day = parts[1];
+      const month = parts[2];
+      const year = parts[3];
 
-        // Convert to 24-hour format
-        let finalHours = hours;
-        if (ampm.toLowerCase() === "pm" && hours !== 12) {
-            finalHours += 12;
-        } else if (ampm.toLowerCase() === "am" && hours === 12) {
-            finalHours = 0;
-        }
-  
-        return new Date(`${year}-${month}-${day}T${finalHours}:${minutes}:00`);
-      };
-  
-      return parseDate(b.createdBy) - parseDate(a.createdBy);
-    })};
-  
-    try{
-      const response = await axios.get("http://localhost:5000/api/stocks");
-      if(response.status === 200){
-        const data = response.data;
-        setStocks(data);
-        setFilteredStocks(sortedStocks(data));
-        setIsLoading(false);
-        setError("")
-        const uniqueFarmers = [...new Set(data.map(stock => stock.farmerName))];
-        const uniqueVegetables = [...new Set(data.map(stock => stock.vegetableName))];
+      // Extract time and AM/PM
+      const timeParts = parts[4].split(" ");
+      const time = timeParts[0]; // HH:MM
+      const ampm = timeParts[1]; // am/pm
 
-        setFarmers(uniqueFarmers);
-        setVegetables(uniqueVegetables);
+      const [hours, minutes] = time.split(":").map(Number);
+
+      // Convert to 24-hour format
+      let finalHours = hours;
+      if (ampm.toLowerCase() === "pm" && hours !== 12) {
+          finalHours += 12;
+      } else if (ampm.toLowerCase() === "am" && hours === 12) {
+          finalHours = 0;
       }
-    }catch(err){
-      setError("Error fetching stocks", err);
-      console.log("Error fetching stocks",err);
-    }finally{
-      setIsLoading(false);
+
+      return new Date(`${year}-${month}-${day}T${finalHours}:${minutes}:00`);
+    };
+
+    return parseDate(b.createdBy) - parseDate(a.createdBy);
+  })};
+  
+  try{
+    const response = await axios.get("http://localhost:5000/api/stocks");
+    if(response.status === 200){
+      const data = response.data;
+      setStocks(data);
+      setFilteredStocks(sortedStocks(data));
+      setError("")
+      const uniqueFarmers = [...new Set(data.map(stock => stock.farmerName))];
+      const uniqueVegetables = [...new Set(data.map(stock => stock.vegetableName))];
+      setFarmers(uniqueFarmers);
+      setVegetables(uniqueVegetables);
     }
-  };
+  }catch(err){
+    setError("Error fetching stocks", err);
+    console.log("Error fetching stocks",err);
+  }finally{
+    setIsLoading(false);
+  }
+};
 
   //function to send farmer data to farmer form when clicked on edit button
   const handleEdit = (stock) => {
@@ -115,37 +113,71 @@ const StockPage = () => {
     const formattedEditTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
     const formattedEditTimestamp = `${formattedEditDate}-${formattedEditTime}`;
     const formattedEditData = {
-        paymentStatus :editedPaymentStatus,
-        amount:editedAmount,
-        modifiedBy: `${user.userName}-${formattedEditTimestamp}`   
+      paymentStatus :editedPaymentStatus,
+      amount:editedAmount,
+      modifiedBy: `${user.userName}-${formattedEditTimestamp}`   
     };
     try{
-        setIsLoading(true);
-        const response = await axios.put(`http://localhost:5000/api/stocks/${selectedLotName}`,formattedEditData);
-        console.log(selectedLotName)
-        if(response.status === 200){
-            toast.success(`${selectedLotName} updated successfully`);
-        }
+      setIsLoading(true);
+      const response = await axios.put(`http://localhost:5000/api/stocks/${selectedLotName}`,formattedEditData);
+      console.log(selectedLotName)
+      if(response.status === 200){
+        toast.success(`${selectedLotName} updated successfully`);
+      }
     }catch(err){
-        toast.error("Failed to edit lot. Please try again!",err.message);
-        console.log(err)
+      toast.error("Failed to edit lot. Please try again!",err.message);
+      console.log(err)
     }finally{
-        setIsLoading(false);
-        setIsEditPaymentStatus(false);
-        setSelectedLotName(null);
-        setEditedAmount(0);
-        fetchStocks();
+      setIsLoading(false);
+      setIsEditPaymentStatus(false);
+      setSelectedLotName(null);
+      setEditedAmount(0);
+      fetchStocks();
     }
 }
   //function to filter data based on selected farmer, vegetable and paymentStatus
   const filteredData = useMemo(() => {
-    return stocks.filter(stock => 
-      (!selectedFarmer || stock.farmerName === selectedFarmer) &&
-      (!selectedVegetable || stock.vegetableName === selectedVegetable) &&
-      (!selectedPaymentStatus || stock.paymentStatus === selectedPaymentStatus) &&
-      (!fromDate || !toDate || (new Date(stock.createdAt) >= new Date(fromDate) && new Date(stock.createdAt) <= new Date(toDate)))
-    );
-  }, [selectedFarmer, selectedVegetable, selectedPaymentStatus, fromDate, toDate, stocks]);
+    const parseDate = (str) => {
+      if (!str) return null;
+      const parts = str.split("-"); // Split by "-"
+      const day = parts[1];
+      const month = parts[2];
+      const year = parts[3];
+  
+      // Extract time and AM/PM
+      const timeParts = parts[4].split(" ");
+      const time = timeParts[0]; // HH:MM
+      const ampm = timeParts[1]; // am/pm
+  
+      const [hours, minutes] = time.split(":").map(Number);
+  
+      // Convert to 24-hour format
+      let finalHours = hours;
+      if (ampm.toLowerCase() === "pm" && hours !== 12) {
+        finalHours += 12;
+      } else if (ampm.toLowerCase() === "am" && hours === 12) {
+        finalHours = 0;
+      }
+  
+      return new Date(`${year}-${month}-${day}T${finalHours}:${minutes}:00`);
+    };
+  
+    return stocks.filter(stock => {
+      const stockDate = parseDate(stock.createdBy); // Extract and convert date
+      // Ensure toDate includes the full day (set time to 23:59:59)
+      const adjustedToDate = toDate ? new Date(toDate) : null;
+      if (adjustedToDate) {
+        adjustedToDate.setHours(23, 59, 59, 999);
+      }
+      return (
+        (!selectedFarmer || stock.farmerName === selectedFarmer) &&
+        (!selectedVegetable || stock.vegetableName === selectedVegetable) &&
+        (!selectedPaymentStatus || stock.paymentStatus === selectedPaymentStatus) &&
+        (!fromDate || !toDate || (stockDate && stockDate >= new Date(fromDate) && stockDate <= new Date(adjustedToDate)))
+      );
+    });
+  }, [stocks, selectedFarmer, selectedVegetable, selectedPaymentStatus, fromDate, toDate]);
+  
   
   useEffect(() => {
     setFilteredStocks(filteredData);
@@ -284,7 +316,7 @@ const StockPage = () => {
                     <td className={`${stock.paymentStatus === "due" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>
                       <select onChange={(e) => handlePaymentChange(e,stock.lotName)} value={stock.paymentStatus}>
                         <option value="due" className='text-red-500 font-medium'>due</option>
-                        <option value="complete" className='text-green-500 font-medium'>complete</option>
+                        <option value="complete" className='text-green-500 font-medium'>paid</option>
                       </select>
                       
                     </td>

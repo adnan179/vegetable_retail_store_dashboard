@@ -23,7 +23,7 @@ router.post("/", async (req,res) => {
 
 router.get("/", async(req,res) => {
   try{
-    const stocks = await Stock.find();
+    const stocks = await Stock.find({ numberOfBags: { $gt: 0 } });
     res.status(200).json(stocks);
   }catch(err){
     res.status(500).json({error:err.message});
@@ -62,41 +62,4 @@ router.delete("/:lotName", async(req,res) => {
   }
 });
 
-router.get("/date/:date", async (req, res) => {
-  try {
-    const date = new Date(req.params.date);
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
-
-    const stocks = await Stock.find({
-        timeStamp: { $gte: startOfDay, $lte: endOfDay }
-    });
-
-    if (stocks.length === 0) return res.status(404).json({ message: "No stocks found for this date" });
-
-    res.status(200).json(stocks);
-  } catch (err) {
-    res.status(500).json({ error: `Error fetching stocks: ${err.message}` });
-  }
-});
-
-router.get("/month/:year/:month", async (req, res) => {
-  try {
-    const year = parseInt(req.params.year);
-    const month = parseInt(req.params.month) - 1;
-
-    const startOfMonth = new Date(year, month, 1, 0, 0, 0);
-    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
-
-    const stocks = await Stock.find({
-        timeStamp: { $gte: startOfMonth, $lte: endOfMonth }
-    });
-
-    if (stocks.length === 0) return res.status(404).json({ message: "No stocks found for this month" });
-
-    res.status(200).json(stocks);
-  } catch (err) {
-    res.status(500).json({ error: `Error fetching stocks: ${err.message}` });
-  }
-});
 module.exports = router;

@@ -19,10 +19,27 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
     const [isLoading, setIsLoading] = useState(false);
     //function to reset the form values
     const inputRef = useRef(null);
+    const [groups,setGroups] = useState(null);
 
     useEffect(() => {
         inputRef.current?.focus();
     }, []);
+    //function to fetch groups
+    useEffect(() => {
+      const fetchGroups = async() => {
+        try{
+          const response = await axios.get("http://localhost:5000/api/groups");
+          if(response.status === 200){
+              setGroups(response.data);
+              setError(null);
+          }
+        }catch(err){
+          toast.error("Failed to fetch groups");
+          setError(err.message);
+        }
+      }
+      fetchGroups();
+    },[])
     const handleCancel = () => {
         setFormData({
             farmerName:"",
@@ -139,12 +156,12 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
         value={formData.phoneNumber}
         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
       />
-      <InputField
-        label="Group"
-        placeholder="Enter Group"
-        value={formData.group}
-        onChange={(e) => setFormData({ ...formData, group: e.target.value })}
-      />
+      <select className='w-full p-2 bg-[#d9d9d9] rounded-md' onChange={(e) => setFormData({...formData, group:e.target.value})} value={formData.group}>
+        <option value="">Group</option>
+        {groups && groups.map(group => (
+            <option key={group.groupName} value={group.groupName}>{group.groupName}</option>
+        ))}
+      </select>
         
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">

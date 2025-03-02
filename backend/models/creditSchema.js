@@ -12,24 +12,18 @@ const creditSchema = new mongoose.Schema({
     },
     less:{
         type:Number,
-        required:true
     },
     creditAmount:{
         type:Number,
         required:true
     },
-    timeStamp:{
-        type:Date,
-        default:new Date(),
+    createdBy:{
+        type:String,
         required:true
-    },
-    dateModified:{
-        type: Date,
-        default:Date.now()
     },
     modifiedBY:{
         type: String,
-        default:"system"
+       
     }
 });
 

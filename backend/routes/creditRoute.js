@@ -5,16 +5,18 @@ const Credits = require("../models/creditSchema");
 
 router.post("/", async(req,res) => {
     try{
-        const { customerName, less, creditAmount } = req.body;
+        const { creditId,customerName, creditAmount, createdBy } = req.body;
         const newCredit = new Credits({
+            creditId,
             customerName,
-            less,
             creditAmount,
-            dateModified: new Date(),
+            createdBy   
         });
         await newCredit.save();
+        res.status(201).json({ message: "Credit added successfully!", credit: newCredit });
     }catch(err){
-        return res.status(400).json({ message: err.message });
+        res.status(400).json({ message: err.message });
+        console.log("Failed to add credit",err.message);
     }
 });
 

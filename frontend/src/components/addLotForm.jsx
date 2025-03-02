@@ -51,123 +51,122 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
         }
         fetchData();
     },[]);
-    // Function to generate lot name
-    const generateLotName = () => {
-        if (!formData.farmerName || !formData.vegetableName || !formData.numberOfBags) {
-            return;
-        }
-
-        // Extract first, middle, and last character from farmerName
-        const farmerShort = formData.farmerName.length >= 3 
-            ? `${formData.farmerName[0]}${formData.farmerName[Math.floor(formData.farmerName.length / 2)]}${formData.farmerName[formData.farmerName.length - 1]}` 
-            : formData.farmerName;
-
-        // Use vegetable's shortName if available, else fallback to first 3 characters
-        const vegetableShort = vegetables?.find(veg => veg.vegetableName === formData.vegetableName)?.shortName;
-
-        // Get current date (DDMMYY format)
-        const date = new Date();
-        const formattedDate = `${date.getDate()}${date.getMonth() + 1}${date.getFullYear().toString().slice(-2)}`;
-
-        // Combine to form lotName
-        const lotName = `${farmerShort?.toUpperCase()}-${vegetableShort?.toUpperCase()}-${formData.numberOfBags}-${formattedDate}`;
-        // Update formData with generated lotName
-        setFormData(prev => ({ ...prev, lotName }));
-    };
-
-    // Auto-generate lotName when all required fields are filled
-    useEffect(() => {
-        generateLotName();
-    }, [formData.farmerName, formData.vegetableName, formData.numberOfBags]);
-    
-    //function to reset the form values
-    const handleCancel = () => {
-        setFormData({
-            farmerName:"",
-            vegetableName:"",
-            numberOfBags:0,
-            paymentStatus:"Due",
-            amount:0,
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Get current date and time
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-        const formattedTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-
-        // Combine for final format
-        const formattedTimestamp = `${formattedDate}-${formattedTime}`;
-        // formatted data for submission
-        const formattedData = {
-            lotName: formData.lotName,
-            farmerName: formData.farmerName,
-            vegetableName: formData.vegetableName,
-            numberOfBags: formData.numberOfBags,
-            paymentStatus :formData.paymentStatus,
-            amount:formData.amount,
-            createdBy: `${user.userName}-${formattedTimestamp}`
-            
-        };
-        
-        // Submit to API
-        try{
-            const response = await axios.post("http://localhost:5000/api/stocks", formattedData);
-            if(response.status === 201){
-                console.log(formattedData);
-                handleCancel();
-                onClose();
-                toast.success("Lot added successfully");
-                fetchLots();
-            }
-            
-        }catch(err){
-            setError(err.message);
-            setTimeout(() => setError(null), 3000);
-            toast.error("Failed to add lot.Please try again!");
-            console.log("Failed to add lot.",err)
-        } 
-    };
-
-    //function to send edited data to the server
-    const handleEditSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Get current date and time
-        const now = new Date();
-        const formattedEditDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-        const formattedEditTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-        const formattedEditTimestamp = `${formattedEditDate}-${formattedEditTime}`;
-        const formattedEditData = {
-            lotName:formData.lotName,
-            farmerName: formData.farmerName,
-            vegetableName: formData.vegetableName,
-            numberOfBags: formData.numberOfBags,
-            paymentStatus :formData.paymentStatus,
-            amount:formData.amount,
-            modifiedBy: `${user.userName}-${formattedEditTimestamp}`
-            
-        };
-        try{
-            setIsLoading(true);
-            const response = await axios.put(`http://localhost:5000/api/stocks/${selectedLotName}`,formattedEditData);
-            console.log(selectedLotName)
-            if(response.status === 200){
-                toast.success(`${selectedLotName} updated successfully`);
-            }
-        }catch(err){
-            toast.error("Failed to edit lot. Please try again!");
-            console.log(err)
-        }finally{
-            setIsLoading(false);
-            onClose();
-            onCloseEdit();
-            fetchLots();
-        }
+  // Function to generate lot name
+  const generateLotName = () => {
+    if (!formData.farmerName || !formData.vegetableName || !formData.numberOfBags) {
+      return;
     }
+
+    // Extract first, middle, and last character from farmerName
+    const farmerShort = formData.farmerName.length >= 3 
+      ? `${formData.farmerName[0]}${formData.farmerName[Math.floor(formData.farmerName.length / 2)]}${formData.farmerName[formData.farmerName.length - 1]}` 
+      : formData.farmerName;
+
+    // Use vegetable's shortName if available, else fallback to first 3 characters
+    const vegetableShort = vegetables?.find(veg => veg.vegetableName === formData.vegetableName)?.shortName;
+
+    // Get current date (DDMMYY format)
+    const date = new Date();
+    const formattedDate = `${date.getDate()}${date.getMonth() + 1}${date.getFullYear().toString().slice(-2)}`;
+
+    // Combine to form lotName
+    const lotName = `${farmerShort?.toUpperCase()}-${vegetableShort?.toUpperCase()}-${formData.numberOfBags}-${formattedDate}`;
+    // Update formData with generated lotName
+    setFormData(prev => ({ ...prev, lotName }));
+  };
+
+  // Auto-generate lotName when all required fields are filled
+  useEffect(() => {
+    generateLotName();
+  }, [formData.farmerName, formData.vegetableName, formData.numberOfBags]);
+    
+  //function to reset the form values
+  const handleCancel = () => {
+      setFormData({
+          farmerName:"",
+          vegetableName:"",
+          numberOfBags:0,
+          paymentStatus:"Due",
+          amount:0,
+      });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+      
+    // Get current date and time
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
+    const formattedTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
+
+    // Combine for final format
+    const formattedTimestamp = `${formattedDate}-${formattedTime}`;
+    // formatted data for submission
+    const formattedData = {
+      lotName: formData.lotName,
+      farmerName: formData.farmerName,
+      vegetableName: formData.vegetableName,
+      numberOfBags: formData.numberOfBags,
+      paymentStatus :formData.paymentStatus,
+      amount:formData.amount,
+      createdBy: `${user.userName}-${formattedTimestamp}`
+    };
+      
+    // Submit to API
+    try{
+      const response = await axios.post("http://localhost:5000/api/stocks", formattedData);
+      if(response.status === 201){
+        console.log(formattedData);
+        handleCancel();
+        onClose();
+        toast.success("Lot added successfully");
+        if(fetchLots) fetchLots();
+      }
+        
+    }catch(err){
+      setError(err.message);
+      setTimeout(() => setError(null), 3000);
+      toast.error("Failed to add lot.Please try again!");
+      console.log("Failed to add lot.",err)
+    } 
+  };
+
+  //function to send edited data to the server
+  const handleEditSubmit = async (e) => {
+      e.preventDefault();
+      
+      // Get current date and time
+      const now = new Date();
+      const formattedEditDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
+      const formattedEditTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
+      const formattedEditTimestamp = `${formattedEditDate}-${formattedEditTime}`;
+      const formattedEditData = {
+          lotName:formData.lotName,
+          farmerName: formData.farmerName,
+          vegetableName: formData.vegetableName,
+          numberOfBags: formData.numberOfBags,
+          paymentStatus :formData.paymentStatus,
+          amount:formData.amount,
+          modifiedBy: `${user.userName}-${formattedEditTimestamp}`
+          
+      };
+      try{
+          setIsLoading(true);
+          const response = await axios.put(`http://localhost:5000/api/stocks/${selectedLotName}`,formattedEditData);
+          console.log(selectedLotName)
+          if(response.status === 200){
+              toast.success(`${selectedLotName} updated successfully`);
+          }
+      }catch(err){
+          toast.error("Failed to edit lot. Please try again!");
+          console.log(err)
+      }finally{
+          setIsLoading(false);
+          onClose();
+          onCloseEdit();
+          fetchLots();
+      }
+  }
 
    
   return (

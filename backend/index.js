@@ -11,6 +11,7 @@ const groupRoutes = require("./routes/groupRoute");
 const creditRoutes = require("./routes/creditRoute");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoute");
+const salesRoutes = require("./routes/salesRoute");
 
 app.use(express.json());
 app.use(cors());
@@ -27,5 +28,6 @@ app.use("/api/stocks",stockRoutes);
 app.use("/api/customers",customerRoutes);
 app.use("/api/groups",groupRoutes);
 app.use("/api/credits",creditRoutes);
+app.use("/api/sales",salesRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
