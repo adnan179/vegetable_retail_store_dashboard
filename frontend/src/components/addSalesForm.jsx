@@ -7,15 +7,14 @@ import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
 
 const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
-    const selectedSale = sale?.saleId;
-    const { user } = useAuth();
+    const selectedSale = sale;
+    const { user, backendURL } = useAuth();
     const [formData, setFormData] = useState({
-        salesId:"",
         customerName: isEdit? sale?.customerName :"",
         lotName: isEdit? sale?.lotName :"",
         numberOfKgs:isEdit ? sale?.numberOfKgs :"",
         pricePerKg:isEdit ? sale?.pricePerKg :"",
-        kuli:isEdit ? sale?.kuli :false,
+        kuli:isEdit ? sale?.kuli :null,
         paymentType : isEdit ? sale?.paymentType:"",
         totalAmount: isEdit ? sale?.totalAmount : 0,
     });
@@ -28,7 +27,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     useEffect(() => {
         const fetchData =  async () => {
             try{
-                const response = await axios.get("http://localhost:5000/api/customers");
+                const response = await axios.get(`${backendURL}/customers`);
                 if(response.status === 200){
                     const data = response.data;
                     const sortedData = data.sort((a,b) => a -b)
@@ -42,11 +41,11 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         fetchData();
     },[]);
 
-    //function to fetch vegetables data
+    //function to fetch stock data
     useEffect(() => {
         const fetchData =  async () => {
             try{
-                const response = await axios.get("http://localhost:5000/api/stocks");
+                const response = await axios.get(`${backendURL}/stocks`);
                 if(response.status === 200){
                     const data = response.data;
                     const sortedData = data.sort((a,b) => a -b);
@@ -131,7 +130,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         
         // Submit to API
         try{
-            const response = await axios.post("http://localhost:5000/api/sales", formattedData);
+            const response = await axios.post(`${backendURL}/sales`, formattedData);
             if(response.status === 201){
                 console.log(formattedData);
                 handleCancel();
@@ -168,12 +167,13 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             modifiedBy: `${user.userName}-${formattedEditTimestamp}`
             
         };
+        console.log(formattedEditData, selectedSale)
         try{
             setIsLoading(true);
-            const response = await axios.put(`http://localhost:5000/api/stocks/${selectedSale}`,formattedEditData);
+            const response = await axios.put(`${backendURL}/sales/${selectedSale.salesId}`,formattedEditData);
             console.log(selectedSale)
             if(response.status === 200){
-                toast.success(`${selectedSale} updated successfully`);
+                toast.success(`${selectedSale.salesId} updated successfully`);
             }
         }catch(err){
             toast.error("Failed to edit Sale. Please try again!");
@@ -199,15 +199,15 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                 onCloseEdit();
             }}/>
         </div>
-        {formData.lotName && (
-            <h1 className='text-[16px] font-medium text-black'>{formData.salesId}</h1>
+        {selectedSale && (
+            <h1 className='text-[16px] font-medium text-black'>{selectedSale.salesId}</h1>
         )}
         {/* Input Fields */}
         <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentType}
             onChange={(e) => setFormData({...formData, paymentType:e.target.value})}>
             <option value="">Payment Type</option>
-            <option value="cash">Cash</option>
-            <option value="jamalu">Jamalu</option>
+            <option value="cash">cash</option>
+            <option value={sale?.paymentType.includes("jamalu") ? sale.paymentType : "jamalu"}>{sale?.paymentType.includes("jamalu") ? sale.paymentType : "jamalu"}</option>
         </select>
         {formData.paymentType && formData.paymentType === 'cash' ? (
             <InputField
@@ -251,8 +251,9 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             value={formData.totalAmount}
             onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
         />
-        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.lotName}
-            onChange={(e) => setFormData({...formData,lotName:e.target.value})}>
+        <label className='text-sm font-medium text-gray-700 w-full'>Kuli</label>
+        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.kuli}
+            onChange={(e) => setFormData({...formData,kuli:e.target.value})}>
             <option value="">Kuli</option>
             <option value="true">true</option>
             <option value="false">false</option>

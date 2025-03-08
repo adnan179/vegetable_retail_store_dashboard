@@ -8,7 +8,7 @@ import LoadingSpinner from './loadingSpinner';
 
 const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
     const selectedLotName = stock?.lotName;
-    const { user } = useAuth();
+    const { user, backendURL } = useAuth();
     const [formData, setFormData] = useState({
         lotName: isEdit? stock?.lotName :"",
         farmerName:isEdit ? stock?.farmerName :"",
@@ -26,7 +26,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
     useEffect(() => {
         const fetchData =  async () => {
             try{
-                const response = await axios.get("http://localhost:5000/api/farmers");
+                const response = await axios.get(`${backendURL}/farmers`);
                 if(response.status === 200){
                     setFarmers(response.data);
                 }
@@ -41,7 +41,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
     useEffect(() => {
         const fetchData =  async () => {
             try{
-                const response = await axios.get("http://localhost:5000/api/vegetables");
+                const response = await axios.get(`${backendURL}/vegetables`);
                 if(response.status === 200){
                     setVegetables(response.data);
                 }
@@ -114,7 +114,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
       
     // Submit to API
     try{
-      const response = await axios.post("http://localhost:5000/api/stocks", formattedData);
+      const response = await axios.post(`${backendURL}/stocks`, formattedData);
       if(response.status === 201){
         console.log(formattedData);
         handleCancel();
@@ -152,7 +152,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
       };
       try{
           setIsLoading(true);
-          const response = await axios.put(`http://localhost:5000/api/stocks/${selectedLotName}`,formattedEditData);
+          const response = await axios.put(`${backendURL}/stocks/${selectedLotName}`,formattedEditData);
           console.log(selectedLotName)
           if(response.status === 200){
               toast.success(`${selectedLotName} updated successfully`);

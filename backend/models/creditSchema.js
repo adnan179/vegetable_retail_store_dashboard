@@ -12,10 +12,15 @@ const creditSchema = new mongoose.Schema({
     },
     less:{
         type:Number,
+        default: 0
     },
     creditAmount:{
         type:Number,
         required:true
+    },
+    payment:{
+        type: String,
+        default: "payment due",
     },
     createdBy:{
         type:String,

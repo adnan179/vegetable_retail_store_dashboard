@@ -7,7 +7,7 @@ import AddOperatorForm from './addOperator';
 import addIcon1 from "../assets/icons8-add-48.png";
 
 const Operators = () => {
-  const {user} = useAuth()
+  const {user, backendURL } = useAuth()
   const [operators, setOperators] = useState(null);
   const [selectedOperator, setSelectedOperator] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,7 @@ const Operators = () => {
   const fetchOperators = async() => {
     setIsLoading(true);
     try{
-      const response = await axios.get("http://localhost:5000/api/users/operators",
+      const response = await axios.get(`${backendURL}/users/operators`,
         {
           headers:{
             authorization: `Bearer ${user.token}`
@@ -51,7 +51,7 @@ const Operators = () => {
   const handleDelete = async (userName) => {
     setIsLoading(true);
     try{
-      const response = await axios.delete(`http://localhost:5000/api/users/operator/${userName}`,{
+      const response = await axios.delete(`${backendURL}/users/operator/${userName}`,{
         headers:{
           Authorization: `Bearer ${user.token}`
         }

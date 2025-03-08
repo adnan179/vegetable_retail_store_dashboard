@@ -3,8 +3,10 @@ import LoadingSpinner from '../components/loadingSpinner';
 import axios from "axios";
 import { toast } from 'react-toastify';
 import AddVegetableForm from '../components/addVegetableForm';
+import { useAuth } from '../context/AuthContext';
 
 const VegetablesPage = () => {
+  const { backendURL } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [vegetables, setVegetables] = useState(null);
@@ -18,7 +20,7 @@ const VegetablesPage = () => {
   const fetchVegetables = async () => {
     setIsLoading(true);
     try{
-      const response = await axios.get("http://localhost:5000/api/vegetables");
+      const response = await axios.get(`${backendURL}/vegetables`);
       if(response.status === 200){
         setVegetables(response.data);
         setError(null)
@@ -40,7 +42,7 @@ const VegetablesPage = () => {
   const handleDelete = async (vegetableName) => {
     setIsLoading(true);
     try{
-      const response = await axios.delete(`http://localhost:5000/api/vegetables/${vegetableName}`);
+      const response = await axios.delete(`${backendURL}/vegetables/${vegetableName}`);
       if(response.status === 200){
         toast.success("Vegetable deleted successfully");
         fetchVegetables();

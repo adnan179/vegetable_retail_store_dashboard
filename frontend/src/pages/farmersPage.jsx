@@ -3,8 +3,10 @@ import AddFarmerForm from '../components/addFarmerForm';
 import axios from "axios";
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/loadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 const FarmersPage = () => {
+  const { backendURL } = useAuth()
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [farmers,setFarmers] = useState([]);
   const [filteredFarmers, setFilteredFarmers] = useState([]);
@@ -24,24 +26,55 @@ const FarmersPage = () => {
   //function to fetch all farmers
   const fetchFarmers = async () => {
     setIsLoading(true);
-    try{
-      const response = await axios.get("http://localhost:5000/api/farmers");
-      if(response.status === 200){
-        const data = response.data;
-        setFarmers(data);
-        setFilteredFarmers(data);
+    try {
+      const response = await axios.get(`${backendURL}/farmers`);
+        if (response.status === 200) {
+          let data = response.data;
 
-        const uniqueVillages = [...new Set(data.map(farmer => farmer.villageName))];
-        const uniqueGroups = [...new Set(data.map(farmer => farmer.group))];
+          // Function to extract and convert date from createdBy
+          const parseCreatedByDate = (createdBy) => {
+            if (!createdBy) return null;
+            
+              const parts = createdBy.split("-");
+              if (parts.length < 5) return null; // Ensure format is valid
+              
+              const [name, day, month, year, time] = parts;
+              
+              // Convert time to 24-hour format for Date parsing
+              let [timeValue, period] = time.split(" ");
+              let [hours, minutes] = timeValue.split(":").map(Number);
 
-        setVillageNames(uniqueVillages);
-        setGroups(uniqueGroups);
-      }
-    }catch(err){
-      setError("Error fetching farmers", err);
-      console.log("Error fetching farmers",err);
-    }finally{
-      setIsLoading(false);
+              if (period.toLowerCase() === "pm" && hours !== 12) {
+                hours += 12;
+              } else if (period.toLowerCase() === "am" && hours === 12) {
+                hours = 0;
+              }
+
+              // Create a valid date object
+              return new Date(`${year}-${month}-${day}T${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`);
+            };
+
+            // Sorting customers based on `createdBy` date extracted
+            const sortedFarmers = data.sort((a, b) => {
+              const dateA = parseCreatedByDate(a.createdBy) || new Date(0);
+              const dateB = parseCreatedByDate(b.createdBy) || new Date(0);
+              return dateB - dateA; // Sort in descending order (most recent first)
+            });
+
+          setFarmers(sortedFarmers);
+          setFilteredFarmers(sortedFarmers);
+
+          const uniqueVillages = [...new Set(sortedFarmers.map(customer => customer.villageName))];
+          const uniqueGroups = [...new Set(sortedFarmers.map(customer => customer.groupName))];
+
+          setVillageNames(uniqueVillages);
+          setGroups(uniqueGroups);
+        }
+    } catch (err) {
+        setError("Error fetching Farmers", err);
+        console.log("Error fetching Farmers", err);
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -69,7 +102,7 @@ const FarmersPage = () => {
   const handleDelete = async (farmerName) => {
     setIsLoading(true);
     try{
-      const response = await axios.delete(`http://localhost:5000/api/farmers/${farmerName}`);
+      const response = await axios.delete(`${backendURL}/farmers/${farmerName}`);
       if(response.status === 200){
         toast.success("Farmer deleted successfully");
         fetchFarmers();

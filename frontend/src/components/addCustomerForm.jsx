@@ -8,7 +8,7 @@ import LoadingSpinner from './loadingSpinner';
 
 const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit}) => {
     const selectedCustomerName = customer?.customerName;
-    const { user } = useAuth();
+    const { user, backendURL } = useAuth();
     const [formData, setFormData] = useState({
         customerName: isEdit? customer?.customerName :"",
         phoneNumber:isEdit ? customer?.phoneNumber :"",
@@ -30,7 +30,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
     useEffect(() => {
         const fetchgroups = async() => {
             try{
-                const response = await axios.get("http://localhost:5000/api/groups");
+                const response = await axios.get(`${backendURL}/groups`);
                 if(response.status === 200){
                     setGroups(response.data);
                     setError(null);
@@ -41,7 +41,8 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             }
         }
         fetchgroups();
-    },[])
+    },[]);
+
     const handleCancel = () => {
         setFormData({
             customerName:"",
@@ -72,7 +73,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
         
         // Submit to API
         try{
-            const response = await axios.post("http://localhost:5000/api/customers", formattedData);
+            const response = await axios.post(`${backendURL}/customers`, formattedData);
             if(response.status === 201){
                 console.log(formattedData);
                 handleCancel();
@@ -108,7 +109,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
         };
         try{
             setIsLoading(true);
-            const response = await axios.put(`http://localhost:5000/api/customers/${selectedCustomerName}`,formattedEditData);
+            const response = await axios.put(`${backendURL}/customers/${selectedCustomerName}`,formattedEditData);
             console.log(selectedCustomerName)
             if(response.status === 200){
                 toast.success(`${selectedCustomerName} updated successfully`);

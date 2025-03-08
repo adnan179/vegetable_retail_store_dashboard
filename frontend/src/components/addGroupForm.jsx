@@ -4,8 +4,10 @@ import InputField from './inputField';
 import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 const AddGroupForm = ({onClose, fetchGroups}) => {
+    const { backendURL } = useAuth()
     const inputRef = useRef(null);
 
     useEffect(() => {
@@ -22,7 +24,6 @@ const AddGroupForm = ({onClose, fetchGroups}) => {
         });
     };
 
-
     //function to submit group
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,7 +33,7 @@ const AddGroupForm = ({onClose, fetchGroups}) => {
             groupName:formData.groupName.toLowerCase(),
         }
         try{
-            const response = await axios.post("http://localhost:5000/api/groups", formattedData);
+            const response = await axios.post(`${backendURL}/groups`, formattedData);
             if(response.status === 201){
                 console.log(formattedData);
                 handleCancel();

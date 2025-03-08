@@ -7,7 +7,7 @@ import InputField from '../components/inputField';
 import { useAuth } from '../context/AuthContext';
 
 const StockPage = () => {
-  const { user } = useAuth();
+  const { user, backendURL } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [stocks,setStocks] = useState([]);
   const [filteredStocks, setFilteredStocks] = useState([]);
@@ -70,7 +70,7 @@ const StockPage = () => {
   })};
   
   try{
-    const response = await axios.get("http://localhost:5000/api/stocks");
+    const response = await axios.get(`${backendURL}/stocks`);
     if(response.status === 200){
       const data = response.data;
       setStocks(data);
@@ -119,7 +119,7 @@ const StockPage = () => {
     };
     try{
       setIsLoading(true);
-      const response = await axios.put(`http://localhost:5000/api/stocks/${selectedLotName}`,formattedEditData);
+      const response = await axios.put(`${backendURL}/${selectedLotName}`,formattedEditData);
       console.log(selectedLotName)
       if(response.status === 200){
         toast.success(`${selectedLotName} updated successfully`);
@@ -204,7 +204,7 @@ const StockPage = () => {
   const handleDelete = async (lotName) => {
     setIsLoading(true);
     try{
-      const response = await axios.delete(`http://localhost:5000/api/stocks/${lotName}`);
+      const response = await axios.delete(`${backendURL}/stocks/${lotName}`);
       if(response.status === 200){
         toast.success("Stock deleted successfully");
         fetchStocks();

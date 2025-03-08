@@ -8,7 +8,7 @@ import LoadingSpinner from './loadingSpinner';
 
 const AddOperatorForm = ({onClose, fetchOperators, operator, isEdit, onCloseEdit}) => {
   const selectedOperatorName = operator?.userName;
-  const { user } = useAuth();
+  const { user, backendURL } = useAuth();
   const [formData, setFormData] = useState({
     userName: isEdit? operator?.userName :"",
     password: isEdit ?operator?.password :"",
@@ -41,7 +41,7 @@ const AddOperatorForm = ({onClose, fetchOperators, operator, isEdit, onCloseEdit
       
     // Submit to API
     try{
-      const response = await axios.post("http://localhost:5000/api/users/add-operator", formattedData,{
+      const response = await axios.post(`${backendURL}/users/add-operator`, formattedData,{
         headers:{
           Authorization: `Bearer ${user.token}`,
         }
@@ -72,7 +72,7 @@ const AddOperatorForm = ({onClose, fetchOperators, operator, isEdit, onCloseEdit
       };
       try{
           setIsLoading(true);
-          const response = await axios.put(`http://localhost:5000/api/users/operator/${selectedOperatorName}`,formattedEditData);
+          const response = await axios.put(`${backendURL}/users/operator/${selectedOperatorName}`,formattedEditData);
           console.log(selectedOperatorName)
           if(response.status === 200){
               toast.success(`${selectedOperatorName} updated successfully`);

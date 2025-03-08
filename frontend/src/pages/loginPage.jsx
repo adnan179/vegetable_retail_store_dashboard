@@ -10,13 +10,13 @@ const LoginPage = () => {
     password:""
   });
 
-  const { login } = useAuth();
+  const { login, backendURL } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
    try{
-    const { data } = await axios.post("http://localhost:5000/api/auth/login", credentials);
+    const { data } = await axios.post(`${backendURL}/auth/login`, credentials);
     console.log("Login Response:", data);
     if (!data.role) {
       throw new Error("Role is missing in response!");

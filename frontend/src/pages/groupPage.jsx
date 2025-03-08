@@ -3,8 +3,10 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 import AddGroupForm from '../components/addGroupForm';
 import LoadingSpinner from '../components/loadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 const GroupPage = () => {
+    const { backendURL } = useAuth()
     const [isFormOpen, setIsFormOpen] = useState(null);
     const [groups, setGroups] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +19,7 @@ const GroupPage = () => {
     const fetchGroups = async () => {
         setIsLoading(true);
         try{
-            const response = await axios.get("http://localhost:5000/api/groups");
+            const response = await axios.get(`${backendURL}/groups`);
             if(response.status === 200){
                 setGroups(response.data);
                 setError(null);
@@ -32,7 +34,7 @@ const GroupPage = () => {
     const handleDeleteGroup = async (groupName) => {
         setIsLoading(true);
         try{
-            await axios.delete(`http://localhost:5000/api/groups/${groupName}`);
+            await axios.delete(`${backendURL}/groups/${groupName}`);
             toast.success("Group deleted successfully");
             fetchGroups();
         }catch(err){

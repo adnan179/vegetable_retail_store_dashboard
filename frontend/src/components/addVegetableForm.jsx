@@ -4,8 +4,10 @@ import InputField from './inputField';
 import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 const AddVegetableForm = ({onClose, fetchVegetables, vegetable, isEdit, onCloseEdit}) => {
+    const { backendURL } = useAuth()
     const selectedVegetableName = vegetable?.vegetableName;
     
     const [formData, setFormData] = useState({
@@ -36,7 +38,7 @@ const AddVegetableForm = ({onClose, fetchVegetables, vegetable, isEdit, onCloseE
             shortName:formData.shortName.toLowerCase(),
         }
         try{
-            const response = await axios.post("http://localhost:5000/api/vegetables", formattedData);
+            const response = await axios.post(`${backendURL}/vegetables`, formattedData);
             if(response.status === 201){
                 console.log(formattedData);
                 handleCancel();
@@ -57,7 +59,7 @@ const AddVegetableForm = ({onClose, fetchVegetables, vegetable, isEdit, onCloseE
         
         try{
             setIsLoading(true);
-            const response = await axios.put(`http://localhost:5000/api/vegetable/${selectedVegetableName}`,formData);
+            const response = await axios.put(`${backendURL}/vegetable/${selectedVegetableName}`,formData);
             console.log(selectedVegetableName)
             if(response.status === 200){
                 toast.success(`${selectedVegetableName} updated successfully`);

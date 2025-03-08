@@ -6,6 +6,7 @@ export const AuthProvider = ({children}) => {
     const [user,setUser] = useState(() => {
         return JSON.parse(localStorage.getItem("user")) || null;
     });
+    const backendURL = `http://localhost:5000/api`;
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -23,7 +24,7 @@ export const AuthProvider = ({children}) => {
     };
 
     return (
-        <AuthContext.Provider value={{user,login, logout}}>
+        <AuthContext.Provider value={{user,login, logout, backendURL}}>
             {children}
         </AuthContext.Provider>
     )

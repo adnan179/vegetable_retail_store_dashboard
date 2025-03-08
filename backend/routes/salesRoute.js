@@ -118,4 +118,31 @@ router.put("/:salesId", async(req,res) => {
   }
 });
 
+router.delete("/:salesId", async (req,res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try{
+    const sale = await Sales.findOne({salesId:req.params.salesId}).session(session);
+    if(!sale){
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({message:"Sale not found"});
+    }
+    if(sale.paymentType.startsWith("jamalu-")){
+      const creditId = sale.paymentType.replace("jamalu-","");
+      await Credit.findOneAndDelete({ creditId:creditId}).session(session);
+    }
+
+    await Sales.deleteOne({salesId:req.params.salesId}).session(session);
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({message:"Sale and associated credit deleted successfully"});
+  }catch(err){
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({error:err.message});
+    console.log("failed to delete the sale and associated credit",err.message);
+  }
+})
+
 module.exports = router;

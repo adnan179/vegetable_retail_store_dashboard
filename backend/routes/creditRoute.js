@@ -23,16 +23,16 @@ router.post("/", async(req,res) => {
 router.get("/", async(req,res) => {
     try{
         const credits = await Credits.find();
-        if(!credit) return res.status(404).json({message:`Cannot find credits ${err.message}`});
+        if(!credits) return res.status(404).json({message:`Cannot find credits ${err.message}`});
         return res.status(200).json(credits);
     }catch(err){
         return res.status(500).json({ message: err.message });
     }
 });
 
-router.get("/:customerName", async(req,res) => {
+router.get("/:creditId", async(req,res) => {
     try{
-        const credit = await Credits.findOne({ customerName: req.params.customerName });
+        const credit = await Credits.findOne({ creditId: req.params.creditId });
         if(!credit) return res.status(404).json({message:`Cannot find credit ${err.message}`});
         res.status(200).json(credit);
     }catch(err){
@@ -76,12 +76,9 @@ router.get("/month/:year/:month", async (req,res) => {
 router.put("/:creditId", async(req,res) => {
     try{
         const creditId = req.params.creditId;
-        const updatedData = {
-            ...req.body,
-            dateModified: new Date(),
-        }
-        const updatedCredit = await Credits.findOneAndUpdate({creditId:creditId},updatedData,{new:true, runValidators:true});
+        const updatedCredit = await Credits.findOneAndUpdate({creditId:creditId},req.body,{new:true});
         if(!updatedCredit) return res.status(404).json({message:"credit not found"});
+        res.status(200).json({message:"Credit successfully updated",credit:updatedCredit});
     }catch(err){
         res.status(500).json({error:err.message});
     }

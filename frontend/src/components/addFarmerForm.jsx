@@ -8,7 +8,7 @@ import LoadingSpinner from './loadingSpinner';
 
 const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => {
     const selectedFarmerName = farmer?.farmerName;
-    const { user } = useAuth();
+    const { user, backendURL } = useAuth();
     const [formData, setFormData] = useState({
         farmerName: isEdit? farmer?.farmerName :"",
         phoneNumber:isEdit ? farmer?.phoneNumber :"",
@@ -28,7 +28,7 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
     useEffect(() => {
       const fetchGroups = async() => {
         try{
-          const response = await axios.get("http://localhost:5000/api/groups");
+          const response = await axios.get(`${backendURL}/groups`);
           if(response.status === 200){
               setGroups(response.data);
               setError(null);
@@ -39,7 +39,8 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
         }
       }
       fetchGroups();
-    },[])
+    },[]);
+
     const handleCancel = () => {
         setFormData({
             farmerName:"",
@@ -71,7 +72,7 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
         
         // Submit to API
         try{
-            const response = await axios.post("http://localhost:5000/api/farmers", formattedData);
+            const response = await axios.post(`${backendURL}/farmers`, formattedData);
             if(response.status === 201){
                 console.log(formattedData);
                 handleCancel();
@@ -107,7 +108,7 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
         };
         try{
             setIsLoading(true);
-            const response = await axios.put(`http://localhost:5000/api/farmers/${selectedFarmerName}`,formattedEditData);
+            const response = await axios.put(`${backendURL}/farmers/${selectedFarmerName}`,formattedEditData);
             console.log(selectedFarmerName)
             if(response.status === 200){
                 toast.success(`${selectedFarmerName} updated successfully`);
