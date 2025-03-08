@@ -14,7 +14,10 @@ const userRoutes = require("./routes/userRoute");
 const salesRoutes = require("./routes/salesRoute");
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000",
+    methods: "GET,POST,PUT,DELETE",
+}));
 
 mongoose.connect('mongodb+srv://veggie:veggie179@cluster0.h3qloyh.mongodb.net/myDatabase?retryWrites=true&w=majority')
 .then(() => console.log("Connected to MongoDB server"))

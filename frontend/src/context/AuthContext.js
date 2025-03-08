@@ -6,7 +6,7 @@ export const AuthProvider = ({children}) => {
     const [user,setUser] = useState(() => {
         return JSON.parse(localStorage.getItem("user")) || null;
     });
-    const backendURL = `http://localhost:5000/api`;
+    const backendURL = `https://vegback-2qqcxpwhl-adnan179s-projects.vercel.app/api`;
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
