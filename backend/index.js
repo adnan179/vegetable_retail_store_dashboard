@@ -15,9 +15,10 @@ const salesRoutes = require("./routes/salesRoute");
 
 app.use(express.json());
 app.use(cors({
-    origin: "https://vegetable-retail-store-dashboard.vercel.app/",
+    origin: "https://vegetable-retail-store-dashboard.vercel.app", // Your frontend URL
     methods: "GET,POST,PUT,DELETE",
-}));
+    credentials: true
+  }));
 
 mongoose.connect('mongodb+srv://veggie:veggie179@cluster0.h3qloyh.mongodb.net/myDatabase?retryWrites=true&w=majority')
 .then(() => console.log("Connected to MongoDB server"))
