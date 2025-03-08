@@ -15,7 +15,7 @@ const salesRoutes = require("./routes/salesRoute");
 
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: "https://vegetable-retail-store-dashboard.vercel.app/",
     methods: "GET,POST,PUT,DELETE",
 }));
 
