@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo } from 'react'
+import React, {useState, useEffect, useMemo, useRef } from 'react'
 import axios from "axios";
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/loadingSpinner';
@@ -27,7 +27,12 @@ const StockPage = () => {
   const [editedAmount, setEditedAmount] = useState(0);
   const [isEditPaymentStatus, setIsEditPaymentStatus] = useState(false);
   const [selectedLotName, setSelectedLotName] = useState(null);
+  const inputRef = useRef(null);
 
+    //function to focus on the first input field in the form
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, [isEditPaymentStatus]);
 
 
   useEffect(() =>{
@@ -292,6 +297,7 @@ const StockPage = () => {
               <th className="border border-black p-2">Farmer</th>
               <th className="border border-black pl-2">Vegetable</th>
               <th className="border border-black pl-2">No.of bags</th>
+              <th className="border border-black pl-2">Remaining bags</th>
               <th className="border border-black pl-2">Payment Status</th>
               <th className="border border-black pl-2">Amount</th>
               <th className="border border-black pl-2">Created By</th>
@@ -309,10 +315,11 @@ const StockPage = () => {
               <tbody className="text-[16px]">
                 {filteredStocks && filteredStocks.map((stock) => (
                   <tr key={stock._id} className="text-left">
-                    <td className="border border-black p-2 ">{stock.lotName}</td>
+                    <td className="border border-black p-2 ">{stock.lotName.split('-').slice(0, 3).join('-')}</td>
                     <td className="border border-black p-2 ">{stock.farmerName}</td>
                     <td className="border border-black p-2">{stock.vegetableName}</td>
                     <td className="border border-black p-2">{stock.numberOfBags}</td>
+                    <td className="border border-black p-2">{stock.remainingBags}</td>
                     <td className={`${stock.paymentStatus === "due" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>
                       <select onChange={(e) => handlePaymentChange(e,stock.lotName)} value={stock.paymentStatus}>
                         <option value="due" className='text-red-500 font-medium'>due</option>
@@ -359,6 +366,7 @@ const StockPage = () => {
                   Payment Status: {editedPaymentStatus}
                 </h2>
               <InputField 
+                inputRef={inputRef}
                 label="Amount"
                 placeholder="Enter amount"
                 value={editedAmount}

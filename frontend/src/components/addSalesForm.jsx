@@ -14,7 +14,6 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         lotName: isEdit? sale?.lotName :"",
         numberOfKgs:isEdit ? sale?.numberOfKgs :"",
         pricePerKg:isEdit ? sale?.pricePerKg :"",
-        kuli:isEdit ? sale?.kuli :null,
         paymentType : isEdit ? sale?.paymentType:"",
         totalAmount: isEdit ? sale?.totalAmount : 0,
     });
@@ -121,11 +120,10 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             lotName: formData.lotName,
             numberOfKgs: formData.numberOfKgs,
             pricePerKg: formData.pricePerKg,
-            kuli: formData.kuli,
-            paymentType : formData.paymentType === 'jamalu' ? `jamalu-cred-${formData.salesId}`:formData.paymentType,
+            paymentType : formData.paymentType === 'credit' ? `credit-${formData.salesId}`:formData.paymentType,
             totalAmount:formData.totalAmount,
             createdBy: `${user.userName}-${formattedTimestamp}`,
-            creditId: formData.paymentType === 'jamalu' ? `cred-${formData.salesId}`:"",
+            creditId: formData.paymentType === 'credit' ? `credit-${formData.salesId}`:"",
         };
         
         // Submit to API
@@ -163,7 +161,6 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             pricePerKg: formData.pricePerKg,
             paymentType :formData.paymentType,
             totalAmount:formData.totalAmount,
-            kuli:formData.kuli,
             modifiedBy: `${user.userName}-${formattedEditTimestamp}`
             
         };
@@ -207,7 +204,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             onChange={(e) => setFormData({...formData, paymentType:e.target.value})}>
             <option value="">Payment Type</option>
             <option value="cash">cash</option>
-            <option value={sale?.paymentType.includes("jamalu") ? sale.paymentType : "jamalu"}>{sale?.paymentType.includes("jamalu") ? sale.paymentType : "jamalu"}</option>
+            <option value={sale?.paymentType.includes("credit") ? sale.paymentType : "credit"}>{sale?.paymentType.includes("credit") ? sale.paymentType : "credit"}</option>
         </select>
         {formData.paymentType && formData.paymentType === 'cash' ? (
             <InputField
@@ -230,7 +227,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             onChange={(e) => setFormData({...formData,lotName:e.target.value})}>
             <option value="">Lot Name</option>
             {lots && lots.map((lot,idx) => (
-                <option key={idx} value={lot.lotName}>{lot.lotName}</option>
+                <option key={idx} value={lot.lotName}>{lot.lotName.split('-').slice(0,3).join('-')}</option>
             ))}
         </select>
         <InputField
@@ -251,13 +248,6 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             value={formData.totalAmount}
             onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
         />
-        <label className='text-sm font-medium text-gray-700 w-full'>Kuli</label>
-        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.kuli}
-            onChange={(e) => setFormData({...formData,kuli:e.target.value})}>
-            <option value="">Kuli</option>
-            <option value="true">true</option>
-            <option value="false">false</option>
-        </select>
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">
                 Cancel

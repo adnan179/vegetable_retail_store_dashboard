@@ -11,9 +11,7 @@ const FarmersPage = () => {
   const [farmers,setFarmers] = useState([]);
   const [filteredFarmers, setFilteredFarmers] = useState([]);
   const [villageNames, setVillageNames] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [selectedVillage, setSelectedVillage] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -64,11 +62,8 @@ const FarmersPage = () => {
           setFarmers(sortedFarmers);
           setFilteredFarmers(sortedFarmers);
 
-          const uniqueVillages = [...new Set(sortedFarmers.map(customer => customer.villageName))];
-          const uniqueGroups = [...new Set(sortedFarmers.map(customer => customer.groupName))];
-
+          const uniqueVillages = [...new Set(sortedFarmers.map(farmer => farmer.villageName))];
           setVillageNames(uniqueVillages);
-          setGroups(uniqueGroups);
         }
     } catch (err) {
         setError("Error fetching Farmers", err);
@@ -91,12 +86,8 @@ const FarmersPage = () => {
     if(selectedVillage){
       filteredData = filteredData.filter(farmer => farmer.villageName === selectedVillage);
     }
-    if(selectedGroup){
-      filteredData = filteredData.filter(farmer => farmer.group === selectedGroup);
-    }
-
     setFilteredFarmers(filteredData);
-  },[selectedGroup,selectedVillage,farmers]);
+  },[selectedVillage,farmers]);
 
   //function to delete selected farmer when clicked on delete button
   const handleDelete = async (farmerName) => {
@@ -129,21 +120,9 @@ const FarmersPage = () => {
                   </option>
                 ))}
             </select>
-            <select value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
-                <option value="">Group</option>
-                {groups && groups.map((group,idx) => (
-                  <option key={idx} value={group}>
-                    {group}
-                  </option>
-                ))}
-            </select>
+            
            <button 
-              onClick={() => {
-              setSelectedVillage("");
-              setSelectedGroup("");
-            }} 
+              onClick={() => setSelectedVillage("")} 
            className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
               Remove Filters
             </button>
@@ -159,7 +138,6 @@ const FarmersPage = () => {
               <th className="border border-black p-2">Farmer name</th>
               <th className="border border-black p-2">Village name</th>
               <th className="border border-black pl-2">Phone number</th>
-              <th className="border border-black pl-2">Group</th>
               <th className="border border-black pl-2">Created By</th>
               <th className="border border-black pl-2">Modified By</th>
               <th className="border border-black p-2"></th>
@@ -178,7 +156,6 @@ const FarmersPage = () => {
                     <td className="border border-black p-2 ">{farmer.farmerName}</td>
                     <td className="border border-black p-2 ">{farmer.villageName}</td>
                     <td className="border border-black p-2">{farmer.phoneNumber}</td>
-                    <td className="border border-black p-2">{farmer.group}</td>
                     <td className="border border-black p-2">{farmer.createdBy}</td>
                     <td className="border border-black p-2">{farmer.modifiedBy ? farmer.modifiedBy : ""}</td>
                     <td className="border border-black p-2">

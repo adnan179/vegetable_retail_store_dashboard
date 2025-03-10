@@ -14,6 +14,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
         phoneNumber:isEdit ? customer?.phoneNumber :"",
         villageName:isEdit ? customer?.villageName :"",
         groupName:isEdit ? customer?.groupName :"",
+        balance:isEdit ? customer?.balance:0,
     });
     const [groups, setGroups] = useState([]);
     const [error, setError] = useState(null);
@@ -68,6 +69,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             phoneNumber: formData.phoneNumber, 
             villageName: formData.villageName.toLowerCase(),
             groupName: formData.groupName.toLowerCase(),
+            balance: formData.balance,
             createdBy: `${user.userName}-${formattedTimestamp}`
         };
         
@@ -104,6 +106,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             phoneNumber: formData.phoneNumber,
             villageName: formData.villageName.toLowerCase(),
             groupName: formData.groupName.toLowerCase(),
+            balance: formData.balance,
             modifiedBy: `${user.userName}-${formattedEditTimestamp}`
             
         };
@@ -157,6 +160,12 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
         placeholder="Enter Phone Number"
         value={formData.phoneNumber}
         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+      />
+      <InputField
+        label="Balance"
+        placeholder="Enter balance amount"
+        value={formData.balance}
+        onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
       />
       <select className='w-full p-2 bg-[#d9d9d9] rounded-md' onChange={(e) => setFormData({...formData, groupName:e.target.value})} value={formData.groupName}>
         <option value="">Group</option>

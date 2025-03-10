@@ -13,40 +13,21 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
         farmerName: isEdit? farmer?.farmerName :"",
         phoneNumber:isEdit ? farmer?.phoneNumber :"",
         villageName:isEdit ? farmer?.villageName :"",
-        group:isEdit ? farmer?.group :"",
     });
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     //function to reset the form values
     const inputRef = useRef(null);
-    const [groups,setGroups] = useState(null);
 
     useEffect(() => {
         inputRef.current?.focus();
     }, []);
-    //function to fetch groups
-    useEffect(() => {
-      const fetchGroups = async() => {
-        try{
-          const response = await axios.get(`${backendURL}/groups`);
-          if(response.status === 200){
-              setGroups(response.data);
-              setError(null);
-          }
-        }catch(err){
-          toast.error("Failed to fetch groups");
-          setError(err.message);
-        }
-      }
-      fetchGroups();
-    },[]);
 
     const handleCancel = () => {
         setFormData({
             farmerName:"",
             phoneNumber:"",
             villageName:"",
-            group:""
         });
     };
 
@@ -65,7 +46,6 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
             farmerName: formData.farmerName,
             phoneNumber: formData.phoneNumber,
             villageName: formData.villageName.toLowerCase(),
-            group: formData.group.toLowerCase(),
             createdBy: `${user.userName}-${formattedTimestamp}`
             
         };
@@ -102,7 +82,6 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
             farmerName: formData.farmerName,
             phoneNumber: formData.phoneNumber,
             villageName: formData.villageName.toLowerCase(),
-            group: formData.group.toLowerCase(),
             modifiedBy: `${user.userName}-${formattedEditTimestamp}`
             
         };
@@ -138,31 +117,25 @@ const AddFarmerForm = ({onClose, fetchFarmers, farmer, isEdit, onCloseEdit}) => 
             }}/>
         </div>
         {/* Reusable Input Fields */}
-      <InputField
-        inputRef={inputRef}
-        label="Farmer Name"
-        placeholder="Enter Farmer Name"
-        value={formData.farmerName}
-        onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
-      />
-      <InputField
-        label="Village Name"
-        placeholder="Enter Village Name"
-        value={formData.villageName}
-        onChange={(e) => setFormData({ ...formData, villageName: e.target.value })}
-      />
-      <InputField
-        label="Phone Number"
-        placeholder="Enter Phone Number"
-        value={formData.phoneNumber}
-        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-      />
-      <select className='w-full p-2 bg-[#d9d9d9] rounded-md' onChange={(e) => setFormData({...formData, group:e.target.value})} value={formData.group}>
-        <option value="">Group</option>
-        {groups && groups.map(group => (
-            <option key={group.groupName} value={group.groupName}>{group.groupName}</option>
-        ))}
-      </select>
+        <InputField
+            inputRef={inputRef}
+            label="Farmer Name"
+            placeholder="Enter Farmer Name"
+            value={formData.farmerName}
+            onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
+        />
+        <InputField
+            label="Village Name"
+            placeholder="Enter Village Name"
+            value={formData.villageName}
+            onChange={(e) => setFormData({ ...formData, villageName: e.target.value })}
+        />
+        <InputField
+            label="Phone Number"
+            placeholder="Enter Phone Number"
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+        />
         
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">

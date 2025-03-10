@@ -10,10 +10,6 @@ const farmerSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
-    group:{
-        type:String,
-        required:true
-    },
     phoneNumber:{
         type:String,
         required:true,

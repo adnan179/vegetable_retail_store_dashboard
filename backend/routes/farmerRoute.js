@@ -5,8 +5,8 @@ const Farmer = require("../models/farmerSchema");
 // Create a new farmer
 router.post("/", async (req, res) => {
     try {
-        const { farmerName,phoneNumber, villageName, group, createdBy } = req.body;
-        const newFarmer = new Farmer({ farmerName, phoneNumber, villageName,group, createdBy });
+        const { farmerName,phoneNumber, villageName, createdBy } = req.body;
+        const newFarmer = new Farmer({ farmerName, phoneNumber, villageName, createdBy });
         await newFarmer.save();
         res.status(201).json({ message: "Farmer added successfully!", farmer: newFarmer });
     } catch (error) {
@@ -25,16 +25,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// Get a single farmer by ID
-router.get("/:name", async (req, res) => {
-    try {
-        const farmer = await Farmer.findOne({farmerName:req.params.name});
-        if (!farmer) return res.status(404).json({ message: "Farmer not found" });
-        res.status(200).json(farmer);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 router.get("/village/:villageName", async(res,req) =>{
     try{
         const farmers = await Farmer.find({villageName:req.params.villageName});

@@ -4,9 +4,10 @@ import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/loadingSpinner';
 import AddSalesForm from '../components/addSalesForm';
 import { useAuth } from '../context/AuthContext';
+import DeletedSales from '../components/deletedSales';
 
 const SalesPage = () => {
-  const { backendURL} = useAuth()
+  const { backendURL, user} = useAuth()
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [sales,setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
@@ -25,8 +26,7 @@ const SalesPage = () => {
   const [toDate, setToDate] = useState("");
   const [totalSalesTillDate, setTotalSalesTillDate] = useState(0);
   const [totalSalesToday, setTotalSalesToday] = useState(0);
-
-
+  const [isDeletedData, setIsDeletedData] = useState(false);
 
   useEffect(() =>{
     fetchSales();
@@ -183,7 +183,10 @@ const SalesPage = () => {
   const handleDelete = async (saleId) => {
     setIsLoading(true);
     try{
-      const response = await axios.delete(`${backendURL}/sales/${saleId}`);
+      const deletedBy = user.userName;
+      const response = await axios.delete(`${backendURL}/sales/${saleId}`, {
+        data: { deletedBy }
+      });
       if(response.status === 200){
         toast.success("Sale deleted successfully");
         fetchSales();
@@ -200,17 +203,21 @@ const SalesPage = () => {
     <section className="flex flex-col w-full min-h-screen p-5 ml-[100px] overflow-auto">
       {/* sales information */}
       <div className='flex flex-row gap-3'>
-        <div className='flex flex-col p-2 rounded-md bg-white shadow'>
-          <h3 className='font-medium text-sm'>Total Sales till date</h3>
-          <h1 className='text-xl font-medium text-[#1E90FF]'>{totalSalesTillDate ? totalSalesTillDate : 0}</h1>
+        <div className='flex flex-col p-4 rounded-md bg-white shadow'>
+          <h3 className='font-medium text-lg'>Total Sales till date</h3>
+          <h1 className='text-2xl font-medium text-[#1E90FF]'>{totalSalesTillDate ? totalSalesTillDate : 0}</h1>
         </div>
-        <div className='flex flex-col p-2 rounded-md bg-white shadow'>
-          <h3 className='font-medium text-sm'>Total Sales Today</h3>
-          <h1 className='text-xl font-medium text-[#1E90FF]'>{totalSalesToday ? totalSalesToday : 0}</h1>
+        <div className='flex flex-col p-4 rounded-md bg-white shadow'>
+          <h3 className='font-medium text-lg'>Total Sales Today</h3>
+          <h1 className='text-2xl font-medium text-[#1E90FF]'>{totalSalesToday ? totalSalesToday : 0}</h1>
         </div>
-        <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+        <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md bg-green-500 text-lg font-medium text-white shadow-sm">
             Add New Sale
-          </button>
+        </button>
+        <button onClick={() => setIsDeletedData(!isDeletedData)}
+          className="px-4 py-2 rounded-md text-white font-medium bg-red-500 shadow-sm">
+          Deleted Sales
+        </button>
       </div>
       {/* filters */}
         <div className="flex flex-row gap-5 mt-3">
@@ -251,7 +258,7 @@ const SalesPage = () => {
               <option value="">Lot names</option>
               {lots && lots.map((lot,idx) => (
                 <option key={idx} value={lot}>
-                  {lot}
+                  {lot.split('-').slice(0,3).join('-')}
                 </option>
               ))}
           </select>
@@ -273,15 +280,15 @@ const SalesPage = () => {
               <option value="cash" className='text-green-500 font-medium'>
                 cash
               </option>
-              <option value="jamalu" className='text-red-500 font-medium'>
-                jamalu
+              <option value="credit" className='text-red-500 font-medium'>
+                credit
               </option>
           </select>
           <button 
             onClick={() => {
               handleRemoveFilters();
               }} 
-              className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+              className="px-4 py-2 rounded-md text-white font-medium bg-red-500 shadow-sm">
               Remove Filters
           </button>
         </div>
@@ -290,12 +297,10 @@ const SalesPage = () => {
         <table className="bg-white w-full mt-5 border-separate border border-black rounded-lg">
           <thead>
             <tr className="text-left text-[16px] text-black">
-              <th className="border border-black p-2">Sale Id</th>
               <th className="border border-black p-2">Customer name</th>
               <th className="border border-black p-2">Lot name</th>
               <th className="border border-black p-2">Number of kgs</th>
               <th className="border border-black pl-2">Price per kg</th>
-              <th className="border border-black pl-2">Kuli</th>
               <th className="border border-black pl-2">Payment Type</th>
               <th className="border border-black pl-2">Amount</th>
               <th className="border border-black pl-2">Created By</th>
@@ -313,14 +318,12 @@ const SalesPage = () => {
               <tbody className="text-[16px]">
                 {filteredSales && filteredSales.map((sale) => (
                   <tr key={sale._id} className="text-left">
-                    <td className="border border-black p-2 ">{sale.salesId}</td>
                     <td className="border border-black p-2 ">{sale.customerName}</td>
-                    <td className="border border-black p-2 ">{sale.lotName}</td>
+                    <td className="border border-black p-2 ">{sale.lotName.split('-').slice(0, 3).join('-')}</td>
                     <td className="border border-black p-2">{sale.numberOfKgs}</td>
                     <td className="border border-black p-2">{sale.pricePerKg}</td>
-                    <td className={`${sale.kuli === "false" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>{sale.kuli}</td>
-                    <td className="border border-black p-2">{sale.paymentType}</td>
-                    <td className={`${sale.paymentType === "jamalu" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>{sale.totalAmount}</td>
+                    <td className="border border-black p-2">{sale.paymentType.split('-')[0]}</td>
+                    <td className={`${sale.paymentType === "credit" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>{sale.totalAmount}</td>
                     <td className="border border-black p-2">{sale.createdBy}</td>
                     <td className="border border-black p-2">{sale.modifiedBy ? sale.modifiedBy : ""}</td>
                     <td className="border border-black p-2">
@@ -348,6 +351,11 @@ const SalesPage = () => {
             onCloseEdit={() => setIsEdit(false)}
           />
         </div>
+        )}
+        {isDeletedData && (
+          <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+            <DeletedSales onClose={() => setIsDeletedData(false)}/>
+          </div>
         )}
     </section>
   )

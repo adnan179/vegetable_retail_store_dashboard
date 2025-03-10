@@ -21,7 +21,6 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [farmers, setFarmers] = useState(null);
     const [vegetables, setVegetables] = useState(null);
-
     //function to fetch farmers data
     useEffect(() => {
         const fetchData =  async () => {
@@ -170,7 +169,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
 
    
   return (
-    <form onSubmit={isEdit ? handleEditSubmit : handleSubmit} className="flex flex-col gap-4 justify-center items-center bg-white p-4 shadow-md rounded-md">
+    <form onSubmit={isEdit ? handleEditSubmit : handleSubmit} className="flex flex-col gap-3 justify-center items-center bg-white p-4 shadow-md rounded-md">
         <div className="flex flex-row justify-between items-center w-full">
             <h2 className="text-black font-semibold text-xl">
                 {isEdit ? "Edit Lot Data" : "Add New Lot"}
@@ -182,7 +181,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
             }}/>
         </div>
         {formData.lotName && (
-            <h1 className='text-[16px] font-medium text-black'>{formData.lotName}</h1>
+            <h1 className='text-[16px] font-medium text-black'>{formData.lotName.split('-').slice(0, 3).join('-')}</h1>
         )}
         {/* Input Fields */}
         <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.farmerName}
@@ -206,20 +205,15 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
             onChange={(e) => setFormData({ ...formData, numberOfBags: e.target.value })}
         />
         {!isEdit && (
-            <InputField 
-                label="Amount"
-                placeholder="Enter amount"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-            />
-        )}
-        {!isEdit && (
-            <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentStatus}
-                onChange={(e) => setFormData({...formData, paymentStatus:e.target.value})}>
-                <option value="">Payment Status</option>
-                <option value="due">Due</option>
-                <option value="complete">Complete</option>
-            </select>
+            <div className='w-full'>
+                <label className='text-gray-400 text-sm'>Payment Status</label>
+                <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentStatus}
+                    onChange={(e) => setFormData({...formData, paymentStatus:e.target.value})}>
+                    <option value="">Payment Status</option>
+                    <option value="due">Due</option>
+                    <option value="complete">Complete</option>
+                </select>
+            </div>
         )}
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">

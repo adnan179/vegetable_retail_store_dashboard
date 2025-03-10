@@ -6,6 +6,7 @@ const Sales = require("../models/salesSchema");
 const Stock = require("../models/stockSchema");
 const Credit = require("../models/creditSchema");
 const Customer = require("../models/customerSchema");
+const DeletedSales = require('../models/deletedSalesSchema');
 
 router.post("/", async (req, res) => {
   const session = await mongoose.startSession();
@@ -20,13 +21,12 @@ router.post("/", async (req, res) => {
       pricePerKg,
       paymentType,
       totalAmount,
-      kuli,
       createdBy,
       creditId,
     } = req.body;
 
     // Find customer and update balance
-    if(paymentType === 'jamalu'){
+    if(paymentType === 'credit'){
       const customer = await Customer.findOne({ customerName }).session(session);
       if (!customer) {
         throw new Error("Customer not found");
@@ -43,12 +43,12 @@ router.post("/", async (req, res) => {
     if (stock.numberOfBags <= 0) {
       throw new Error("Insufficient stock");
     }
-    stock.numberOfBags -= 1;
+    stock.remainingBags -= 1;
     await stock.save({ session });
 
     // Handle credit logic
     let credit = null;
-    if (paymentType.split("-")[0] === "jamalu") {
+    if (paymentType.split("-")[0] === "credit") {
       credit = new Credit({
         creditId,
         customerName,
@@ -67,7 +67,6 @@ router.post("/", async (req, res) => {
       pricePerKg,
       paymentType,
       totalAmount,
-      kuli,
       createdBy,
       creditId,
     });
@@ -97,17 +96,6 @@ router.get("/", async(req,res) => {
   }
 });
 
-
-router.get("/:salesId", async(req,res) => {
-  try{
-    const sale = await Sale.findOne({salesId:req.params.salesId});
-    if(!sale) return res.status(404).json({message:"Sale not found"});
-    res.status(200).json(sale);
-  }catch(err){
-    res.status(500).json({error:err.message});
-  }
-});
-
 router.put("/:salesId", async(req,res) => {
   try{
     const updatedSale = await Sales.findOneAndUpdate({salesId:req.params.salesId},req.body,{new:true, runValidators:true});
@@ -119,6 +107,10 @@ router.put("/:salesId", async(req,res) => {
 });
 
 router.delete("/:salesId", async (req,res) => {
+  const { deletedBy } = req.body;
+  if (!deletedBy) {
+    return res.status(400).json({ message: "deletedBy field is required" });
+  }
   const session = await mongoose.startSession();
   session.startTransaction();
   try{
@@ -127,9 +119,17 @@ router.delete("/:salesId", async (req,res) => {
       await session.abortTransaction();
       session.endSession();
       return res.status(404).json({message:"Sale not found"});
-    }
-    if(sale.paymentType.startsWith("jamalu-")){
-      const creditId = sale.paymentType.replace("jamalu-","");
+    };
+
+    const deletedSale = new DeletedSales({
+      ...sale.toObject(),
+      deletedBy: deletedBy,
+      deletedAt: new Date(),
+    });
+
+    await deletedSale.save({ session });
+    if(sale.paymentType.startsWith("credit-")){
+      const creditId = sale.paymentType.replace("credit-","");
       await Credit.findOneAndDelete({ creditId:creditId}).session(session);
     }
 
@@ -143,6 +143,55 @@ router.delete("/:salesId", async (req,res) => {
     res.status(500).json({error:err.message});
     console.log("failed to delete the sale and associated credit",err.message);
   }
-})
+});
+
+router.get("/deletedSales", async (req, res) => {
+  try {
+    const deletedSales = await DeletedSales.find();
+    res.status(200).json(deletedSales);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+    console.log("failed to fetch the deleted sales",err.message);
+  }
+});
+
+router.post("/undo-delete/:salesId", async(req,res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try{
+    const deletedSale = await DeletedSales.findOne({salesId:req.params.salesId}).session(session);
+    if(!deletedSale){
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({message:"Deleted sale not found"});
+    }
+    // Restore the sale back to SalesSchema
+    const restoredSale = new Sales({
+      salesId: deletedSale.salesId,
+      customerName: deletedSale.customerName,
+      numberOfKgs: deletedSale.numberOfKgs,
+      pricePerKg: deletedSale.pricePerKg,
+      lotName: deletedSale.lotName,
+      paymentType: deletedSale.paymentType,
+      totalAmount: deletedSale.totalAmount,
+      createdBy: deletedSale.createdBy,
+      modifiedBy: deletedSale.modifiedBy || null,
+    });
+
+    await restoredSale.save({ session });
+
+    await DeletedSales.deleteOne({salesId:req.params.salesId}).session(session);
+
+    await session.commitTransaction();
+    session.endSession();
+    res.status(200).json({message:"Deleted sale restored successfully", sale:restoredSale});
+  }catch(err){
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({error:err.message});
+    console.log("failed to restore the deleted sale",err.message);
+  }
+});
 
 module.exports = router;

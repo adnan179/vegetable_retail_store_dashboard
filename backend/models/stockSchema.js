@@ -10,6 +10,12 @@ const stockSchema = new mongoose.Schema({
         type: Number,
         required:true
     },
+    remainingBags:{
+        type: Number,
+        default: function (){
+            return this.numberOfBags;
+        }
+    },
     vegetableName:{
         type: String,
         required:true

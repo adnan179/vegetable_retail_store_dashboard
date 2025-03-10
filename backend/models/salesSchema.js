@@ -26,16 +26,11 @@ const salesSchema = new mongoose.Schema({
     paymentType:{
         type:String,
         required:true,
-        default:"Cash"
+        default:"cash"
     },
     totalAmount:{
         type:Number,
         required:true
-    },
-    kuli:{
-        type:String,
-        required:true,
-        default:"false"
     },
     createdBy:{
         type:String,

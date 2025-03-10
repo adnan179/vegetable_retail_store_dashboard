@@ -5,10 +5,10 @@ const Customers = require("../models/customerSchema");
 
 router.post("/", async(req,res) => {
     try{
-        const { customerName, phoneNumber, villageName, groupName, createdBy} = req.body;
-        const newCustomer = new Customers({ customerName, phoneNumber, villageName, groupName,balance:0, createdBy });
+        const { customerName, phoneNumber, villageName, groupName, balance, createdBy} = req.body;
+        const newCustomer = new Customers({ customerName, phoneNumber, villageName, groupName,balance, createdBy });
         await newCustomer.save();
-        res.status(201).json({message: "Customer saved successfully",newCustomer})
+        res.status(201).json({message: "Customer saved successfully",newCustomer});
     }catch(err){
         res.status(500).json({error:err.message});
         console.log("Error saving customer",err.message);

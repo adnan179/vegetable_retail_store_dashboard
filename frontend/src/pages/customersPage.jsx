@@ -18,6 +18,7 @@ const CustomersPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isEdit, setIsEdit] = useState(false);
+  const [balanceSort, setBalanceSort] = useState("");
 
     
     useEffect(() =>{
@@ -87,7 +88,7 @@ const CustomersPage = () => {
     setIsFormOpen(true);
   }
     
-  //function to filter data based on selected village and group
+  //function to filter data based on selected balance sort, village and group
   useEffect(() => {
     let filteredData = customers;
     if(selectedVillage){
@@ -97,8 +98,14 @@ const CustomersPage = () => {
       filteredData = filteredData.filter(customer => customer.groupName === selectedGroup);
     }
 
+    //sort based on balance
+    if (balanceSort === "lowToHigh"){
+      filteredData.sort((a,b) => a.balance - b.balance);
+    }else if ( balanceSort === "highToLow"){
+      filteredData.sort((a,b) => b.balance - a.balance);
+    }
     setFilteredCustomers(filteredData);
-  },[selectedGroup,selectedVillage,customers]);
+  },[selectedGroup,selectedVillage,customers, balanceSort]);
 
   //function to delete selected farmer when clicked on delete button
   const handleDelete = async (farmerName) => {
@@ -123,7 +130,7 @@ const CustomersPage = () => {
       <div className="flex flex-row gap-5">
         <select value={selectedVillage}
         onChange={(e) => setSelectedVillage(e.target.value)}
-          className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+          className="px-4 py-2 text-white rounded-md font-medium bg-[#1E90FF] shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none">
             <option value="">Village Name</option>
             {villageNames && villageNames.map((village,idx) => (
               <option key={idx} value={village}>
@@ -133,7 +140,7 @@ const CustomersPage = () => {
         </select>
         <select value={selectedGroup}
           onChange={(e) => setSelectedGroup(e.target.value)}
-          className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+          className="px-4 py-2 text-white rounded-md font-medium bg-[#1E90FF] shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none">
             <option value="">Group</option>
             {groups && groups.map((group,idx) => (
               <option key={idx} value={group}>
@@ -141,15 +148,25 @@ const CustomersPage = () => {
               </option>
             ))}
         </select>
+        <select 
+          value={balanceSort}
+          onChange={(e) => setBalanceSort(e.target.value)}
+          className="px-4 py-2 text-white rounded-md font-medium bg-[#1E90FF] shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none"
+        >
+          <option value="">Sort by Balance</option>
+          <option value="lowToHigh">Low to High</option>
+          <option value="highToLow">High to Low</option>
+        </select>
         <button 
           onClick={() => {
           setSelectedVillage("");
           setSelectedGroup("");
+          setBalanceSort("");
         }} 
-        className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+        className="px-4 py-2 rounded-md text-white font-medium bg-red-500 shadow-sm">
           Remove Filters
         </button>
-        <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+        <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-white font-medium bg-green-600 shadow-sm">
           Add New Customer
         </button>
       </div>
@@ -181,7 +198,7 @@ const CustomersPage = () => {
                   <td className="border border-black p-2 ">{customer.customerName}</td>
                   <td className="border border-black p-2 ">{customer.villageName}</td>
                   <td className="border border-black p-2">{customer.phoneNumber}</td>
-                  <td className="border border-black p-2">{customer.group}</td>
+                  <td className="border border-black p-2">{customer.groupName}</td>
                   <td className="border border-black p-2 text-red-500 font-medium">{customer.balance}</td>
                   <td className="border border-black p-2">{customer.createdBy}</td>
                   <td className="border border-black p-2">{customer.modifiedBy ? customer.modifiedBy : ""}</td>
