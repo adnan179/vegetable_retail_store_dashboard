@@ -6,13 +6,13 @@ const { Server } = require("socket.io");
 
 const app = express();
 const PORT = 5000;
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "https://vegetable-retail-store-dashboard.vercel.app/",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  }
-});
+// const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: {
+//     origin: "https://vegetable-retail-store-dashboard.vercel.app/",
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//   }
+// });
 
 // Middleware
 app.use(express.json());
@@ -54,4 +54,4 @@ app.use("/api/groups", groupRoutes);
 app.use("/api/credits", creditRoutes);
 app.use("/api/sales", salesRoutes);
 
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
