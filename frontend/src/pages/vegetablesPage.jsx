@@ -57,7 +57,7 @@ const VegetablesPage = () => {
 
   return (
     <section className="w-full min-h-screen flex flex-col ml-[100px] p-5">
-      <button className="flex w-[200px] bg-white justify-center items-center py-2 rounded-md text-black font-medium"
+      <button className="p-4 bg-green-500 flex w-[200px] justify-center items-center text-lg rounded-md text-white font-medium"
       onClick={() => setIsFormOpen(true)}>
         Add New vegetable
       </button>

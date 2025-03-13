@@ -6,16 +6,21 @@ import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
 
+
 const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     const selectedSale = sale;
     const { user, backendURL } = useAuth();
-    const [formData, setFormData] = useState({
+    const initialFormData = {
         customerName: isEdit? sale?.customerName :"",
         lotName: isEdit? sale?.lotName :"",
         numberOfKgs:isEdit ? sale?.numberOfKgs :"",
         pricePerKg:isEdit ? sale?.pricePerKg :"",
         paymentType : isEdit ? sale?.paymentType:"",
         totalAmount: isEdit ? sale?.totalAmount : 0,
+    }
+    const [formData, setFormData] = useState(() => {
+        const savedData = sessionStorage.getItem("salesFormData");
+        return savedData ? JSON.parse(savedData) : initialFormData;
     });
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -73,9 +78,10 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         // Get current date (DDMMYY format)
         const date = new Date();
         const formattedDate = `${date.getDate()}${date.getMonth() + 1}${date.getFullYear().toString().slice(-2)}`;
+        const randomNumber = Math.random(0,1000).toString().slice(2,5);
 
         // Combine to form lotName
-        const salesId = `${customerShort?.toUpperCase()}-${lotShort?.toUpperCase()}-${formattedDate}`;
+        const salesId = `${customerShort?.toUpperCase()}-${lotShort?.toUpperCase()}-${formattedDate}-${randomNumber}`;
         // Update formData with generated lotName
         setFormData({ ...formData, salesId:salesId });
     };
@@ -99,9 +105,9 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             numberOfKgs:0,
             pricePerKg:0,
             paymentType:"",
-            totalAmount:0,
-            kuli:false
+            totalAmount:0
         });
+        localStorage.removeItem("salesFormData");
     };
 
     const handleSubmit = async (e) => {
@@ -125,6 +131,14 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             createdBy: `${user.userName}-${formattedTimestamp}`,
             creditId: formData.paymentType === 'credit' ? `credit-${formData.salesId}`:"",
         };
+        const prevFormData = {
+            customerName:formData.customerName,
+            lotName: formData.lotName,
+            numberOfKgs: 0,
+            pricePerKg: 0,
+            paymentType : formData.paymentType === 'credit' ? `credit`:"cash",
+            totalAmount:0,
+        };
         
         // Submit to API
         try{
@@ -134,7 +148,8 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                 handleCancel();
                 onClose();
                 toast.success("Sale added successfully");
-                if(fetchSales) fetchSales();
+                console.log(formData);
+                sessionStorage.setItem("salesFormData",JSON.stringify(prevFormData))
             }
             
         }catch(err){
@@ -181,9 +196,8 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             onCloseEdit();
             fetchSales();
         }
-    }
-
-   
+    };
+ 
   return (
     <form onSubmit={isEdit ? handleEditSubmit : handleSubmit} className="flex flex-col gap-4 justify-center items-center bg-white p-4 shadow-md rounded-md">
         <div className="flex flex-row justify-between items-center w-full">
@@ -259,6 +273,6 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
     </form>
   )
-}
+};
 
 export default AddSalesForm;

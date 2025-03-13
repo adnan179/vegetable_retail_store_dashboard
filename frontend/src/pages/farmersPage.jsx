@@ -112,7 +112,7 @@ const FarmersPage = () => {
         <div className="flex flex-row gap-5">
             <select value={selectedVillage}
             onChange={(e) => setSelectedVillage(e.target.value)}
-              className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+              className="px-4 py-2 text-lg rounded-md text-white font-medium bg-blue-400 shadow-sm">
                 <option value="">Village Name</option>
                 {villageNames && villageNames.map((village,idx) => (
                   <option key={idx} value={village}>
@@ -123,10 +123,10 @@ const FarmersPage = () => {
             
            <button 
               onClick={() => setSelectedVillage("")} 
-           className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+           className="px-4 py-2 text-lg rounded-md text-white font-medium bg-blue-400 shadow-sm">
               Remove Filters
             </button>
-            <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+            <button onClick={() => setIsFormOpen(true)} className="p-4 rounded-md text-lg text-white font-medium bg-green-500 shadow-sm">
               Add New Farmer
             </button>
         </div>

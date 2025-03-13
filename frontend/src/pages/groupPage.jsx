@@ -47,7 +47,7 @@ const GroupPage = () => {
   return (
     <section className="flex flex-col gap-5 w-full min-h-screen ml-[100px] p-5">
         <div>
-            <button className="px-4 py-2 bg-white rounded-md shadow-sm font-medium" onClick={() => setIsFormOpen(true)}>
+            <button className="p-4 bg-green-500 text-white text-lg rounded-md shadow-sm font-medium" onClick={() => setIsFormOpen(true)}>
                 Add New Group
             </button>
         </div>

@@ -30,18 +30,18 @@ const Dashboard = () => {
   const timeSlots = generateTimeSlots();
 
   return (
-    <section className="flex flex-col w-full min-h-screen ml-[100px] p-5">
+    <section className="flex flex-col w-[100%-110px] min-h-screen ml-[100px] p-5">
       <h1 className='font-medium text-lg'>Welcome {user.role && user.role}: {user.userName && user.userName}</h1>
       
       <div className='flex flex-row gap-3 mt-5'>
         {user.role === "admin" && <Operators />}
         
-        <button onClick={() => setIsNewSale(true)} className='w-[200px] h-[200px] bg-[#1E90FF] rounded-md flex flex-col justify-center items-center text-white font-medium'>
+        <button onClick={() => setIsNewSale(true)} className='w-[200px] h-[200px] bg-green-500 rounded-md flex flex-col justify-center items-center text-white font-medium'>
           <img src={addIcon} alt='Add new sale' className='w-4 h-4 object-contain'/>
           <span>Add New Sale</span>
         </button>
 
-        <button onClick={() => setIsNewLot(true)} className='w-[200px] h-[200px] bg-[#1E90FF] rounded-md flex flex-col justify-center items-center text-white font-medium'>
+        <button onClick={() => setIsNewLot(true)} className='w-[200px] h-[200px] bg-green-500 rounded-md flex flex-col justify-center items-center text-white font-medium'>
           <img src={addIcon} alt='Add new sale' className='w-4 h-4 object-contain'/>
           <span>Add New Lot</span>
         </button>
@@ -49,18 +49,18 @@ const Dashboard = () => {
 
       {/* Date and Time Filters */}
       <div className='flex flex-row gap-4 items-center mt-2'>
-        <input type='date' value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="border p-2 rounded-md"/>
+        <input type='date' value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-blue-400 text-white p-3 rounded-md"/>
         
-        <select value={fromTime} onChange={(e) => setFromTime(e.target.value)} className="border p-2 rounded-md">
+        <select value={fromTime} onChange={(e) => setFromTime(e.target.value)} className="bg-blue-400 text-white p-3 rounded-md">
           <option value="">From Time</option>
           {timeSlots.map((time) => (
             <option key={time} value={time}>{time}</option>
           ))}
         </select>
 
-        <input type='date' value={toDate} onChange={(e) => setToDate(e.target.value)} className="border p-2 rounded-md"/>
+        <input type='date' value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-blue-400 text-white p-3 rounded-md"/>
         
-        <select value={toTime} onChange={(e) => setToTime(e.target.value)} className="border p-2 rounded-md">
+        <select value={toTime} onChange={(e) => setToTime(e.target.value)} className="bg-blue-400 text-white p-3 rounded-md">
           <option value="">To Time</option>
           {timeSlots.map((time) => (
             <option key={time} value={time}>{time}</option>

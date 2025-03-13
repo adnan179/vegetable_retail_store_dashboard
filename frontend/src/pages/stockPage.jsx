@@ -233,7 +233,7 @@ const StockPage = () => {
                 <input 
                     type="date" 
                     value={fromDate} 
-                    onChange={(e) => setFromDate(e.target.value)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm" 
+                    onChange={(e) => setFromDate(e.target.value)} className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm" 
                 />
             </div>
             <div className='flex flex-col gap-1'>
@@ -243,13 +243,13 @@ const StockPage = () => {
                 <input 
                     type="date" 
                     value={toDate} 
-                    onChange={(e) => setToDate(e.target.value)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm" 
+                    onChange={(e) => setToDate(e.target.value)} className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm" 
                 />
             </div>
             
             <select value={selectedFarmer}
             onChange={(e) => setSelectedFarmer(e.target.value)}
-              className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+              className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
                 <option value="">Farmers</option>
                 {farmers && farmers.map((farmer,idx) => (
                   <option key={idx} value={farmer}>
@@ -259,7 +259,7 @@ const StockPage = () => {
             </select>
             <select value={selectedVegetable}
               onChange={(e) => setSelectedVegetable(e.target.value)}
-              className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+              className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
                 <option value="">Vegetables</option>
                 {vegetables && vegetables.map((vegetable,idx) => (
                   <option key={idx} value={vegetable}>
@@ -269,7 +269,7 @@ const StockPage = () => {
             </select>
             <select value={selectedPaymentStatus}
               onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-              className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+              className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
                 <option value="">Payment Status</option>
                 {paymentStatuses && paymentStatuses.map((paymentStatus,idx) => (
                   <option key={idx} value={paymentStatus}>
@@ -281,10 +281,10 @@ const StockPage = () => {
               onClick={() => {
                 handleRemoveFilters();
                 }} 
-                className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+                className="px-4 py-2 rounded-md text-white font-medium bg-red-500 shadow-sm">
                 Remove Filters
             </button>
-            <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+            <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-white font-medium bg-green-500 shadow-sm">
               Add New Lot
             </button>
         </div>

@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const router = express.Router();
 
 const Sales = require("../models/salesSchema");
 const Stock = require("../models/stockSchema");
@@ -8,6 +7,7 @@ const Credit = require("../models/creditSchema");
 const Customer = require("../models/customerSchema");
 const DeletedSales = require('../models/deletedSalesSchema');
 
+const router = express.Router();
 router.post("/", async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -71,11 +71,11 @@ router.post("/", async (req, res) => {
       creditId,
     });
     await newSale.save({ session });
-
+     // emit the new sale to all connected clients
+     req.io.emit('newSale',newSale)
     // Commit the transaction
     await session.commitTransaction();
     session.endSession();
-
     res.status(201).json({ message: "Sale added successfully", sale: newSale });
   } catch (err) {
     // Rollback changes if any error occurs
@@ -86,7 +86,7 @@ router.post("/", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-
+  
 router.get("/", async(req,res) => {
   try{
     const sales = await Sales.find();
@@ -95,17 +95,17 @@ router.get("/", async(req,res) => {
     res.status(500).json({error:err.message});
   }
 });
-
+  
 router.put("/:salesId", async(req,res) => {
   try{
     const updatedSale = await Sales.findOneAndUpdate({salesId:req.params.salesId},req.body,{new:true, runValidators:true});
     if(!updatedSale) return res.status(404).json({message:"Sale not found"});
-    res.status(200).json({message:"Sale updated successfully",stock:updatedSale});
+    res.status(200).json({message:"Sale updated successfully",sale:updatedSale});
   }catch(err){
     res.status(400).json({error:err.message})
   }
 });
-
+  
 router.delete("/:salesId", async (req,res) => {
   const { deletedBy } = req.body;
   if (!deletedBy) {
@@ -144,7 +144,7 @@ router.delete("/:salesId", async (req,res) => {
     console.log("failed to delete the sale and associated credit",err.message);
   }
 });
-
+  
 router.get("/deletedSales", async (req, res) => {
   try {
     const deletedSales = await DeletedSales.find();
@@ -154,7 +154,7 @@ router.get("/deletedSales", async (req, res) => {
     console.log("failed to fetch the deleted sales",err.message);
   }
 });
-
+  
 router.post("/undo-delete/:salesId", async(req,res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -193,5 +193,6 @@ router.post("/undo-delete/:salesId", async(req,res) => {
     console.log("failed to restore the deleted sale",err.message);
   }
 });
+
 
 module.exports = router;

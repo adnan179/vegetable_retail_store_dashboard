@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 const SaleCards = () => {
   const { backendURL } = useAuth();
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState({});
 
+  
   // Function to fetch sales
   const fetchSales = async () => {
     try {
@@ -57,6 +61,10 @@ const SaleCards = () => {
     }
   };
 
+  useEffect(() => {
+    fetchSales();
+  },[]);
+
   // Function to group sales by customerName
   const groupSales = (salesData) => {
     const grouped = salesData.reduce((acc, sale) => {
@@ -71,48 +79,56 @@ const SaleCards = () => {
   };
 
   useEffect(() => {
-    fetchSales(); // Fetch on mount
-    // const interval = setInterval(fetchSales, 5 * 60 * 100); // Fetch every 5 mins
+    fetchSales();
 
-    // return () => clearInterval(interval); // Cleanup on unmount
+    // Listen for new sales
+    socket.on('newSale', (newSale) => {
+      setSales(prevSales => [...prevSales, newSale]);
+    });
+
+    // Cleanup function
+    return () => {
+      socket.off('newSale');
+    };
   }, []);
 
   return (
     <div className="w-full h-full flex flex-col gap-5 p-3 rounded-md shadow bg-white">
       <h2 className="text-lg font-medium">Today's Sales</h2>
-
-      {/* Sales Cards */}
       <div className="flex flex-col gap-3">
         {Object.entries(filteredSales).length > 0 ? (
-          Object.entries(filteredSales).map(([customerName, salesList]) => (
-            <div key={customerName} className="border p-3 rounded-md shadow-md bg-gray-50">
-              <h3 className="text-md font-semibold text-gray-700">{customerName}</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th className="border border-black p-2">Sales Id</th>
-                    <th className="border border-black p-2">Lot Name</th>
-                    <th className="border border-black p-2">No.of Kgs</th>
-                    <th className="border border-black p-2">Price/Kg</th>
-                    <th className="border border-black p-2">Amount</th>
-                    <th className="border border-black p-2">Payment Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesList.map((sale) => (
-                    <tr key={sale.salesId}>
-                      <td className="border border-black p-2">{sale.salesId}</td>
-                      <td className="border border-black p-2">{sale.lotName}</td>
-                      <td className="border border-black p-2">{sale.numberOfKgs}</td>
-                      <td className="border border-black p-2">₹{sale.pricePerKg}</td>
-                      <td className="border border-black p-2">₹{sale.totalAmount}</td>
-                      <td className="border border-black p-2">{sale.paymentType}</td>
+          Object.entries(filteredSales).map(([customerName, salesList]) => {
+            const isCredit = salesList.some(sale => sale.paymentType.includes("credit"));
+            return (
+              <div key={customerName} className={`border p-3 rounded-md shadow-md ${isCredit ? 'bg-red-600 text-white' : 'bg-green-500 text-white'}`}>
+                <h3 className="text-lg font-bold">{customerName}</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="border border-white p-2">Sales Id</th>
+                      <th className="border border-white p-2">Lot Name</th>
+                      <th className="border border-white p-2">No.of Kgs</th>
+                      <th className="border border-white p-2">Price/Kg</th>
+                      <th className="border border-white p-2">Amount</th>
+                      <th className="border border-white p-2">Payment Type</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))
+                  </thead>
+                  <tbody>
+                    {salesList.map((sale) => (
+                      <tr key={sale.salesId}>
+                        <td className="border border-white p-2">{sale.salesId}</td>
+                        <td className="border border-white p-2">{sale.lotName}</td>
+                        <td className="border border-white p-2">{sale.numberOfKgs}</td>
+                        <td className="border border-white p-2">₹{sale.pricePerKg}</td>
+                        <td className="border border-white p-2">₹{sale.totalAmount}</td>
+                        <td className="border border-white p-2">{sale.paymentType}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })
         ) : (
           <p className="text-gray-500">No sales for today.</p>
         )}

@@ -88,7 +88,7 @@ const Operators = () => {
                     <td className="border border-black p-2">{op.userName}</td>
                     <td className="border border-black p-2">{op.role}</td>
                     <td className="border border-black p-2">
-                      <button onClick={() => handleEditSubmit(op)} className="bg-gray-200 text-[#1E90FF] font-bold cursor-pointer px-4 py-2 rounded">
+                      <button onClick={() => handleEditSubmit(op)} className="bg-blue-400 text-white font-bold cursor-pointer px-4 py-2 rounded">
                         Edit
                       </button>
                     </td>
@@ -96,7 +96,7 @@ const Operators = () => {
                       <button onClick={(e) =>{
                         e.stopPropagation();
                         handleDelete(op.userName);
-                      }} className="text-[#D74848] font-bold cursor-pointer px-4 py-2 rounded bg-gray-200">
+                      }} className="text-white font-bold cursor-pointer px-4 py-2 rounded bg-red-500">
                         Delete
                       </button>
                     </td>

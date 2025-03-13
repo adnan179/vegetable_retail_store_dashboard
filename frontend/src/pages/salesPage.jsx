@@ -16,7 +16,6 @@ const SalesPage = () => {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [selectedLot, setSelectedLot] = useState("");
   const [selectedAmount, setSelectedAmount] = useState("");
-  const [isKuli, setIsKuli] = useState(null);
   const [selectedPaymentType, setSelectedPaymentType] = useState(null);
   const [selectedSale, setSelectedSale] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,8 +76,8 @@ const SalesPage = () => {
         setFilteredSales(sortedData);
         setError("");
   
-        const uniqueCustomers = [...new Set(data.map((sale) => sale.customerName))];
-        const uniqueLots = [...new Set(data.map((sale) => sale.lotName))];
+        const uniqueCustomers = [...new Set(data.map((sale) => sale.customerName))].sort((a,b) => a.customerName - b.customerName);
+        const uniqueLots = [...new Set(data.map((sale) => sale.lotName))].sort((a,b) => a.lotName - b.lotName);
         setCustomers(uniqueCustomers);
         setLots(uniqueLots);
         const total = data.reduce((sum,current) => {
@@ -155,13 +154,12 @@ const SalesPage = () => {
       return (
         (!selectedCustomer || sale.customerName === selectedCustomer) &&
         (!selectedLot || sale.lotName === selectedLot) &&
-        (!isKuli || sale.kuli === isKuli) &&
         (!selectedPaymentType || sale.paymentType === selectedPaymentType) &&
         (!selectedAmount || (sale.totalAmount && sale.totalAmount >= parseInt(selectedAmount.split('-')[0]) && sale.totalAmount <= parseInt(selectedAmount.split('-')[1]))) &&
         (!fromDate || !toDate || (stockDate && stockDate >= new Date(fromDate) && stockDate <= new Date(adjustedToDate)))
       );
     });
-  }, [sales, selectedCustomer, selectedLot,isKuli,selectedAmount, selectedPaymentType,fromDate, toDate]);
+  }, [sales, selectedCustomer, selectedLot,selectedAmount, selectedPaymentType,fromDate, toDate]);
   
   
   useEffect(() => {
@@ -176,7 +174,6 @@ const SalesPage = () => {
     setSelectedAmount("");
     setFromDate("");
     setToDate("");
-    setIsKuli(null);
     setSelectedPaymentType(null);
   };
   //function to delete selected farmer when clicked on delete button
@@ -200,7 +197,7 @@ const SalesPage = () => {
   }
 
   return (
-    <section className="flex flex-col w-full min-h-screen p-5 ml-[100px] overflow-auto">
+    <section className="flex flex-col w-[100% - 110px] min-h-screen p-5 ml-[100px] overflow-auto">
       {/* sales information */}
       <div className='flex flex-row gap-3'>
         <div className='flex flex-col p-4 rounded-md bg-white shadow'>
@@ -228,7 +225,7 @@ const SalesPage = () => {
             <input 
               type="date" 
               value={fromDate} 
-              onChange={(e) => setFromDate(e.target.value)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm" 
+              onChange={(e) => setFromDate(e.target.value)} className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none" 
             />
           </div>
           <div className='flex flex-col gap-1'>
@@ -238,13 +235,14 @@ const SalesPage = () => {
             <input 
               type="date" 
               value={toDate} 
-              onChange={(e) => setToDate(e.target.value)} className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm" 
+              onChange={(e) => setToDate(e.target.value)} className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm
+              focus:outline-none" 
             />
           </div>
             
           <select value={selectedCustomer}
             onChange={(e) => setSelectedCustomer(e.target.value)}
-            className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none">
               <option value="">Customers</option>
               {customers && customers.map((customer,idx) => (
                 <option key={idx} value={customer}>
@@ -254,7 +252,7 @@ const SalesPage = () => {
           </select>
           <select value={selectedLot}
             onChange={(e) => setSelectedLot(e.target.value)}
-            className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none">
               <option value="">Lot names</option>
               {lots && lots.map((lot,idx) => (
                 <option key={idx} value={lot}>
@@ -262,20 +260,9 @@ const SalesPage = () => {
                 </option>
               ))}
           </select>
-          <select value={isKuli}
-            onChange={(e) => setIsKuli(e.target.value)}
-            className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
-              <option value="">Kuli</option>
-              <option value="true" className='text-green-500 font-medium'>
-                True
-              </option>
-              <option value="false" className='text-red-500 font-medium'>
-                False
-              </option>
-          </select>
           <select value={selectedPaymentType}
             onChange={(e) => setSelectedPaymentType(e.target.value)}
-            className="px-4 py-2 rounded-md text-black font-medium bg-white shadow-sm">
+            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none">
               <option value="">Payment Type</option>
               <option value="cash" className='text-green-500 font-medium'>
                 cash
