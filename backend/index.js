@@ -9,7 +9,7 @@ const PORT = 5000;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["https://vegetable-retail-store-dashboard.vercel.app", "http://localhost:3000"],
+    origin: ["https://vegetable-retail-store-front-end.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE"],
   }
 });
@@ -17,7 +17,7 @@ const io = new Server(server, {
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: ["https://vegetable-retail-store-dashboard.vercel.app", "http://localhost:3000"],
+  origin: ["https://vegetable-retail-store-front-end.vercel.app", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
