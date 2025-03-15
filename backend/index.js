@@ -5,6 +5,8 @@ const http = require('http');
 const { Server } = require("socket.io");
 
 const app = express();
+app.use(express.json()); // <-- This enables JSON parsing in requests
+app.use(express.urlencoded({ extended: true })); // <-- Handles URL-encoded data
 const PORT = 5000;
 const server = http.createServer(app);
 app.use(cors({

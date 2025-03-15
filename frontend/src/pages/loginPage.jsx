@@ -15,25 +15,27 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-   try{
-    const { data } = await axios.post(`${backendURL}/auth/login`, credentials,{
-      withCredentials: true,
-    });
-    console.log("Login Response:", data);
-    if (!data.role) {
-      throw new Error("Role is missing in response!");
+    console.log("Submitting Credentials:", credentials); // Debugging
+  
+    try {
+      const { data } = await axios.post(`${backendURL}/auth/login`, credentials, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" }, // Ensure proper request format
+      });
+  
+      console.log("Login Response:", data);
+      if (!data.role) {
+        throw new Error("Role is missing in response!");
+      }
+      login({ token: data.token, userName: data.userName, role: data.role });
+  
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Login Error:", err);
+      alert("Invalid credentials: " + (err?.response?.data?.error || err.message));
     }
-    login({token:data.token, userName:data.userName, role:data.role});
-    
-    console.log("Navigating to /dashboard"); // Debugging
-
-    navigate("/dashboard");
-
-   }catch(err){
-    console.error("Login Error:", err);
-    alert("Invalid credentials:" + err?.response?.data?.error || err.message);
-   }
-  }
+  };
+  
   return (
     <section className="flex w-full min-h-screen justify-center items-center">
         <form onSubmit={handleLogin} className="flex flex-col gap-4 p-4 rounded-md justify-center items-center shadow-sm shadow-gray-600">

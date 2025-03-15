@@ -7,7 +7,11 @@ const SECRET_KEY = "Adnan179";
 
 router.post("/login", async(req,res) => {
     try{
-        const { userName, password} = req.body;
+        console.log("Request Body:", req.body);
+        const { userName, password } = req.body;
+        if (!userName || !password) {
+            return res.status(400).json({ error: "Missing credentials!" });
+        }
         const user = await User.findOne({userName, password});
         if(!user) return res.status(400).json({error:"Invalid credentials!"});
         const tokenPayload = { id: user._id, role: user.role };
