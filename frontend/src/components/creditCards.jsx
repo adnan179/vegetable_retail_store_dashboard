@@ -6,6 +6,7 @@ import { io } from "socket.io-client";
 
 const socket = io("https://vegetable-retail-store-dashboard.vercel.app", {
   transports: ["websocket", "polling"],
+  withCredentials: true,
   reconnection: true,
   reconnectionAttempts: 10,
   reconnectionDelay: 5000,
