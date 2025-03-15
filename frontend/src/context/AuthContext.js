@@ -6,8 +6,8 @@ export const AuthProvider = ({children}) => {
     const [user,setUser] = useState(() => {
         return JSON.parse(localStorage.getItem("user")) || null;
     });
-    const backendURL = `https://vegetable-retail-store-backend.vercel.app/api`;
-    // const backendURL = `http://localhost:5000/api`;
+    // const backendURL = `https://vegetable-retail-store-backend.vercel.app/api`;
+    const backendURL = `http://localhost:5000/api`;
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if(storedUser) setUser(JSON.parse(storedUser))

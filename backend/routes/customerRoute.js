@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 const Customers = require("../models/customerSchema");
+const customersHistorySchema = require('../models/customersHistorySchema');
 
 router.post("/", async(req,res) => {
     try{
-        const { customerName, phoneNumber, villageName, groupName, balance, createdBy} = req.body;
-        const newCustomer = new Customers({ customerName, phoneNumber, villageName, groupName,balance, createdBy });
+        const { customerName, phoneNumber, villageName, groupName, balance, createdBy,createdAt} = req.body;
+        const newCustomer = new Customers({ customerName, phoneNumber, villageName, groupName,balance, createdBy,createdAt });
         await newCustomer.save();
         res.status(201).json({message: "Customer saved successfully",newCustomer});
     }catch(err){
@@ -17,12 +18,13 @@ router.post("/", async(req,res) => {
 
 router.get("/", async(req,res) => {
     try{
-        const customers = await Customers.find();
+        const customers = await Customers.find().sort({createdAt:-1});
         if(!customers) return res.status(404).json({message:"Customers not found"});
         res.status(200).json(customers);
 
     }catch(err){
-        res.status(500).json({error:err.message})
+        res.status(500).json({error:err.message});
+        console.log(err.message)
     }
 });
 
@@ -40,6 +42,16 @@ router.put("/:customerName", async (req, res) => {
         res.status(200).json({ message: "Customer updated successfully", updatedCustomer });
     } catch (err) {
         res.status(500).json({ error: `Error updating customer: ${err.message}` });
+    }
+});
+
+// Get Customer History
+router.get("/history", async (req, res) => {
+    try {
+        const history = await customersHistorySchema.find().sort({ modifiedAt: -1 });
+        res.status(200).json(history);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching customer history" });
     }
 });
 

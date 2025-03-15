@@ -24,5 +24,5 @@ const farmerSchema = new mongoose.Schema({
         type:String,
 
     }
-});
-module.exports = mongoose.model("FarmerSchema",farmerSchema); 
+},{timestamps:true});
+module.exports = mongoose.model("FarmerS",farmerSchema); 

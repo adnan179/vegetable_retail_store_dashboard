@@ -53,26 +53,27 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
   // Function to generate lot name
   const generateLotName = () => {
     if (!formData.farmerName || !formData.vegetableName || !formData.numberOfBags) {
-      return;
+        return;
     }
 
     // Extract first, middle, and last character from farmerName
     const farmerShort = formData.farmerName.length >= 3 
-      ? `${formData.farmerName[0]}${formData.farmerName[Math.floor(formData.farmerName.length / 2)]}${formData.farmerName[formData.farmerName.length - 1]}` 
-      : formData.farmerName;
+        ? `${formData.farmerName[0]}${formData.farmerName[Math.floor(formData.farmerName.length / 2)]}${formData.farmerName[formData.farmerName.length - 1]}` 
+        : formData.farmerName;
 
     // Use vegetable's shortName if available, else fallback to first 3 characters
     const vegetableShort = vegetables?.find(veg => veg.vegetableName === formData.vegetableName)?.shortName;
 
-    // Get current date (DDMMYY format)
-    const date = new Date();
-    const formattedDate = `${date.getDate()}${date.getMonth() + 1}${date.getFullYear().toString().slice(-2)}`;
+    // Generate a 4-digit random number
+    const randomNumber = Math.floor(1000 + Math.random() * 9000); // Ensures a 4-digit number
 
     // Combine to form lotName
-    const lotName = `${farmerShort?.toUpperCase()}-${vegetableShort?.toUpperCase()}-${formData.numberOfBags}-${formattedDate}`;
+    const lotName = `${farmerShort?.toUpperCase()}-${vegetableShort?.toUpperCase()}-${formData.numberOfBags}-${randomNumber}`;
+
     // Update formData with generated lotName
     setFormData(prev => ({ ...prev, lotName }));
-  };
+};
+
 
   // Auto-generate lotName when all required fields are filled
   useEffect(() => {
@@ -92,14 +93,6 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-      
-    // Get current date and time
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-    const formattedTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-
-    // Combine for final format
-    const formattedTimestamp = `${formattedDate}-${formattedTime}`;
     // formatted data for submission
     const formattedData = {
       lotName: formData.lotName,
@@ -108,7 +101,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
       numberOfBags: formData.numberOfBags,
       paymentStatus :formData.paymentStatus,
       amount:formData.amount,
-      createdBy: `${user.userName}-${formattedTimestamp}`
+      createdBy: user.userName
     };
       
     // Submit to API
@@ -133,12 +126,6 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
   //function to send edited data to the server
   const handleEditSubmit = async (e) => {
       e.preventDefault();
-      
-      // Get current date and time
-      const now = new Date();
-      const formattedEditDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-      const formattedEditTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-      const formattedEditTimestamp = `${formattedEditDate}-${formattedEditTime}`;
       const formattedEditData = {
           lotName:formData.lotName,
           farmerName: formData.farmerName,
@@ -146,7 +133,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
           numberOfBags: formData.numberOfBags,
           paymentStatus :formData.paymentStatus,
           amount:formData.amount,
-          modifiedBy: `${user.userName}-${formattedEditTimestamp}`
+          modifiedBy: user.userName
           
       };
       try{

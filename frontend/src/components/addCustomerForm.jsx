@@ -56,13 +56,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Get current date and time
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-        const formattedTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-
-        // Combine for final format
-        const formattedTimestamp = `${formattedDate}-${formattedTime}`;
+        
         // formatted data for submission
         const formattedData = {
             customerName: formData.customerName,
@@ -70,7 +64,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             villageName: formData.villageName.toLowerCase(),
             groupName: formData.groupName.toLowerCase(),
             balance: formData.balance,
-            createdBy: `${user.userName}-${formattedTimestamp}`
+            createdBy: user.userName
         };
         
         // Submit to API
@@ -95,19 +89,13 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
     //function to send edited data to the server
     const handleEditSubmit = async (e) => {
         e.preventDefault();
-        
-        // Get current date and time
-        const now = new Date();
-        const formattedEditDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-        const formattedEditTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-        const formattedEditTimestamp = `${formattedEditDate}-${formattedEditTime}`;
         const formattedEditData = {
             customerName: formData.customerName,
             phoneNumber: formData.phoneNumber,
             villageName: formData.villageName.toLowerCase(),
             groupName: formData.groupName.toLowerCase(),
             balance: formData.balance,
-            modifiedBy: `${user.userName}-${formattedEditTimestamp}`
+            modifiedBy: user.userName
             
         };
         try{

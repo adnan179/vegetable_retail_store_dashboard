@@ -8,7 +8,7 @@ import LoadingSpinner from './loadingSpinner';
 
 
 const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
-    const selectedSale = sale;
+    const selectedSale = sale || {};
     const { user, backendURL } = useAuth();
     const initialFormData = {
         customerName: isEdit? sale?.customerName :"",
@@ -16,7 +16,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         numberOfKgs:isEdit ? sale?.numberOfKgs :"",
         pricePerKg:isEdit ? sale?.pricePerKg :"",
         paymentType : isEdit ? sale?.paymentType:"",
-        totalAmount: isEdit ? sale?.totalAmount : 0,
+        totalAmount: isEdit ? sale?.totalAmount : "",
     }
     const [formData, setFormData] = useState(() => {
         const savedData = sessionStorage.getItem("salesFormData");
@@ -89,7 +89,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     // Auto-generate lotName when all required fields are filled
     useEffect(() => {
         generateSalesId();
-    }, [formData.customerName, formData.lotName]);
+    }, [formData.customerName, formData.lotName, formData.numberOfKgs, formData.pricePerKg, formData.paymentType]);
     
     const generateAmount = () => {
         setFormData({...formData, totalAmount:(formData.numberOfKgs)*(formData.pricePerKg)})
@@ -102,8 +102,8 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         setFormData({
             customerName:"",
             lotName:"",
-            numberOfKgs:0,
-            pricePerKg:0,
+            numberOfKgs:"",
+            pricePerKg:"",
             paymentType:"",
             totalAmount:0
         });
@@ -113,30 +113,22 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Get current date and time
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-        const formattedTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-
-        // Combine for final format
-        const formattedTimestamp = `${formattedDate}-${formattedTime}`;
         const formattedData = {
             salesId:formData.salesId,
             customerName:formData.customerName,
             lotName: formData.lotName,
             numberOfKgs: formData.numberOfKgs,
             pricePerKg: formData.pricePerKg,
-            paymentType : formData.paymentType === 'credit' ? `credit-${formData.salesId}`:formData.paymentType,
+            paymentType : formData.paymentType,
             totalAmount:formData.totalAmount,
-            createdBy: `${user.userName}-${formattedTimestamp}`,
-            creditId: formData.paymentType === 'credit' ? `credit-${formData.salesId}`:"",
+            createdBy: user.userName
         };
         const prevFormData = {
             customerName:formData.customerName,
             lotName: formData.lotName,
             numberOfKgs: 0,
-            pricePerKg: 0,
-            paymentType : formData.paymentType === 'credit' ? `credit`:"cash",
+            pricePerKg: formData.pricePerKg,
+            paymentType : formData.paymentType,
             totalAmount:0,
         };
         
@@ -149,7 +141,8 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                 onClose();
                 toast.success("Sale added successfully");
                 console.log(formData);
-                sessionStorage.setItem("salesFormData",JSON.stringify(prevFormData))
+                sessionStorage.setItem("salesFormData",JSON.stringify(prevFormData));
+                fetchSales();
             }
             
         }catch(err){
@@ -163,33 +156,27 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     //function to send edited data to the server
     const handleEditSubmit = async (e) => {
         e.preventDefault();
-        
-        // Get current date and time
-        const now = new Date();
-        const formattedEditDate = now.toLocaleDateString("en-GB").replace(/\//g, "-"); // Formats as DD-MM-YY
-        const formattedEditTime = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true }).toLowerCase(); // Formats as hh:mm am/pm
-        const formattedEditTimestamp = `${formattedEditDate}-${formattedEditTime}`;
         const formattedEditData = {
+            salesId:selectedSale.salesId,
             customerName:formData.customerName,
             lotName:formData.lotName,
             numberOfKgs: formData.numberOfKgs,
             pricePerKg: formData.pricePerKg,
             paymentType :formData.paymentType,
             totalAmount:formData.totalAmount,
-            modifiedBy: `${user.userName}-${formattedEditTimestamp}`
+            modifiedBy: user.userName
             
         };
-        console.log(formattedEditData, selectedSale)
+        console.log(formattedEditData)
         try{
             setIsLoading(true);
             const response = await axios.put(`${backendURL}/sales/${selectedSale.salesId}`,formattedEditData);
-            console.log(selectedSale)
             if(response.status === 200){
                 toast.success(`${selectedSale.salesId} updated successfully`);
             }
         }catch(err){
             toast.error("Failed to edit Sale. Please try again!");
-            console.log(err)
+            console.log("failed to edit sale",err.message)
         }finally{
             setIsLoading(false);
             onClose();
@@ -210,8 +197,8 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                 onCloseEdit();
             }}/>
         </div>
-        {selectedSale && (
-            <h1 className='text-[16px] font-medium text-black'>{selectedSale.salesId}</h1>
+        {sale && (
+            <h1 className='text-[16px] font-medium text-black'>{sale.salesId}</h1>
         )}
         {/* Input Fields */}
         <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentType}

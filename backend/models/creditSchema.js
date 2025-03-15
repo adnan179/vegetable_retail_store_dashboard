@@ -18,18 +18,32 @@ const creditSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
-    payment:{
-        type: String,
-        default: "payment due",
-    },
     createdBy:{
         type:String,
         required:true
+    },
+    createdAt:{
+        type: Date,
+        default: Date.now()
     },
     modifiedBY:{
         type: String,
        
     }
-});
+},{timestamps:true});
 
-module.exports = mongoose.model("CreditSchema", creditSchema);
+creditSchema.pre("findOneAndUpdate", async function (next){
+    const CreditHistory = require("./creditHistorySchema");
+    const credit = await this.model.findOne(this.getQuery());
+    if(credit){
+        await CreditHistory.create({
+            creditId:credit.creditId,
+            previousData: credit.toObject(),
+            newData: this.getUpdate(),
+            modifiedBy: this.getUpdate().modifiedBy,
+            modifiedAt: new Date()
+        })
+    }
+    next();
+})
+module.exports = mongoose.model("Credits", creditSchema);

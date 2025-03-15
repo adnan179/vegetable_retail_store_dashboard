@@ -1,44 +1,64 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const StockHistory = require("./stockHistorySchema"); // Import StockHistory model
 
 const stockSchema = new mongoose.Schema({
-    lotName:{
+    lotName: {
         type: String,
-        required:true,
-        unique:true
+        required: true,
+        unique: true
     },
-    numberOfBags:{
+    numberOfBags: {
         type: Number,
-        required:true
+        required: true
     },
-    remainingBags:{
+    remainingBags: {
         type: Number,
-        default: function (){
+        default: function () {
             return this.numberOfBags;
         }
     },
-    vegetableName:{
+    vegetableName: {
         type: String,
-        required:true
+        required: true
     },
-    farmerName:{
+    farmerName: {
         type: String,
-        required:true
+        required: true
     },
-    paymentStatus:{
+    paymentStatus: {
         type: String,
-        required:true
+        required: true
     },
-    amount:{
+    amount: {
         type: Number,
-        default:0
+        default: 0
     },
-    createdBy:{
+    createdBy: {
         type: String,
-        required:true,
+        required: true,
     },
-    modifiedBY:{
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    modifiedBy: {
         type: String,
     }
+}, { timestamps: true });
+
+stockSchema.pre("findOneAndUpdate", async function (next) {
+    const docToUpdate = await this.model.findOne(this.getQuery());
+    if (docToUpdate) {
+        await StockHistory.create({
+            lotName: docToUpdate.lotName,
+            previousData: docToUpdate.toObject(),
+            newData: this.getUpdate(),
+            modifiedBy: this.getUpdate().modifiedBy,
+            modifiedAt: new Date()
+        });
+    }
+    next();
 });
 
-module.exports = mongoose.model("StockSchema", stockSchema);
+const Stock = mongoose.model("Stocks", stockSchema);
+module.exports = Stock;

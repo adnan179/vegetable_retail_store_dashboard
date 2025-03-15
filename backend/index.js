@@ -9,7 +9,7 @@ const PORT = 5000;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://vegetable-retail-store-dashboard.vercel.app",
+    origin: ["https://vegetable-retail-store-dashboard.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE"],
   }
 });
@@ -17,7 +17,7 @@ const io = new Server(server, {
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "https://vegetable-retail-store-dashboard.vercel.app",
+  origin: ["https://vegetable-retail-store-dashboard.vercel.app", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -55,3 +55,11 @@ app.use("/api/credits", creditRoutes);
 app.use("/api/sales", salesRoutes);
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Real-time Connection
+io.on("connection", (socket) => {
+  console.log("A user connected");
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});

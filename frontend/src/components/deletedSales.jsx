@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import closeIcon from "../assets/icons8-close-48.png"
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
 const DeletedSales = ({onClose}) => {
     const { backendURL } = useAuth();
@@ -21,18 +20,6 @@ const DeletedSales = ({onClose}) => {
     };
     fetchDeletedSales();
   },[]);
-
-  const handleUndo = async (sale) => {
-    try{
-        const response = await axios.post(`${backendURL}/sales/undo-delete/${sale.salesId}`);
-        if(response.status === 200){
-            setDeletedSales(deletedSales.filter((deletedSale) => deletedSale.salesId !== sale.salesId));
-        }
-    }catch(err){
-        toast.error("Failed to restore sale");
-        console.error("Undo delete error:", err.message);      
-    }
-  }
 
   return (
     <div className='flex flex-col bg-white p-5 rounded-lg gap-3'>
@@ -57,7 +44,6 @@ const DeletedSales = ({onClose}) => {
                 <th className="border border-black pl-2">Amount</th>
                 <th className="border border-black pl-2">Deleted By</th>
                 <th className="border border-black pl-2">Deleted At</th>
-                <th className="border border-black p-2"></th>
                 </tr>
             </thead>
             {deletedSales.length === 0 ? (
@@ -74,11 +60,6 @@ const DeletedSales = ({onClose}) => {
                         <td className={`${sale.paymentType === "credit" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>{sale.totalAmount}</td>
                         <td className="border border-black p-2">{sale.deletedBy}</td>
                         <td className="border border-black p-2">{new Date(sale.deletedAt).toLocaleDateString()}</td>
-                        <td className="border border-black p-2">
-                            <button onClick={() => handleUndo(sale)} className="bg-green-500 text-white font-bold cursor-pointer px-4 py-2 rounded">
-                                Undo
-                            </button>
-                        </td>
                     </tr>
                 ))}
             </tbody>

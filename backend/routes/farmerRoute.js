@@ -18,20 +18,10 @@ router.post("/", async (req, res) => {
 // Get all farmers
 router.get("/", async (req, res) => {
     try {
-        const farmers = await Farmer.find();
+        const farmers = await Farmer.find().sort({createdAt:-1});
         res.status(200).json(farmers);
     } catch (error) {
         res.status(500).json({ error: error.message });
-    }
-});
-
-router.get("/village/:villageName", async(res,req) =>{
-    try{
-        const farmers = await Farmer.find({villageName:req.params.villageName});
-        if(!farmers) return res.status(404).json({message:"Farmers not found "});
-        res.status(200).json(farmers);
-    }catch(err){
-        res.status(500).json({error:err.message});
     }
 });
 

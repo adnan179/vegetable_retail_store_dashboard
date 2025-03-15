@@ -34,15 +34,6 @@ router.post("/add-admin", async(req,res) => {
         res.status(500).json({error:err.message});
     }
 });
-router.delete("/admin/:adminName", async(req,res) =>{
-    try{
-        const {adminName} = req.params;
-        await Users.findOneAndDelete({userName:adminName});
-        res.status(200).json({message:"Admin deleted successfully"});
-    }catch(err){
-        res.status(500).json({error:err.message});
-    }
-});
 router.post("/add-operator", authenticate,isAdmin, async(req,res) => {
     try{
         const {userName, password} = req.body;

@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
 // Get all farmers
 router.get("/", async (req, res) => {
     try {
-        const vegetables = await Vegetable.find();
+        const vegetables = await Vegetable.find().sort({createdAt:-1});
         res.status(200).json(vegetables);
     } catch (error) {
         res.status(500).json({ error: error.message });

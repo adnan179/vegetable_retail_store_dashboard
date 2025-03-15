@@ -6,6 +6,6 @@ const groupSchema = new mongoose.Schema({
         required: true, 
         unique:true,
     }
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("GroupSchema", groupSchema);

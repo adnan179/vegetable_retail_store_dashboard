@@ -6,6 +6,7 @@ const Stock = require("../models/stockSchema");
 const Credit = require("../models/creditSchema");
 const Customer = require("../models/customerSchema");
 const DeletedSales = require('../models/deletedSalesSchema');
+const salesHistorySchema = require('../models/salesHistorySchema');
 
 const router = express.Router();
 router.post("/", async (req, res) => {
@@ -22,7 +23,6 @@ router.post("/", async (req, res) => {
       paymentType,
       totalAmount,
       createdBy,
-      creditId,
     } = req.body;
 
     // Find customer and update balance
@@ -46,18 +46,6 @@ router.post("/", async (req, res) => {
     stock.remainingBags -= 1;
     await stock.save({ session });
 
-    // Handle credit logic
-    let credit = null;
-    if (paymentType.split("-")[0] === "credit") {
-      credit = new Credit({
-        creditId,
-        customerName,
-        creditAmount: totalAmount,
-        createdBy,
-      });
-      await credit.save({ session });
-    }
-
     // Create new sale entry
     const newSale = new Sales({
       salesId,
@@ -68,14 +56,14 @@ router.post("/", async (req, res) => {
       paymentType,
       totalAmount,
       createdBy,
-      creditId,
     });
     await newSale.save({ session });
-     // emit the new sale to all connected clients
-     req.io.emit('newSale',newSale)
     // Commit the transaction
     await session.commitTransaction();
     session.endSession();
+     // emit the new sale to all connected clients
+     req.io.emit('newSale',{message:"New sale added"});
+
     res.status(201).json({ message: "Sale added successfully", sale: newSale });
   } catch (err) {
     // Rollback changes if any error occurs
@@ -89,20 +77,49 @@ router.post("/", async (req, res) => {
   
 router.get("/", async(req,res) => {
   try{
-    const sales = await Sales.find();
+    const sales = await Sales.find().sort({createdAt:-1});
     res.status(200).json(sales);
   }catch(err){
     res.status(500).json({error:err.message});
   }
 });
   
-router.put("/:salesId", async(req,res) => {
+
+router.put("/:salesId", async (req, res) => {
+  try {
+      const { salesId } = req.params;
+      const {salesId:bodySalesId,...updateData} = req.body;
+      
+      // Ensure `modifiedBy` is provided from the frontend
+      if (!updateData.modifiedBy) {
+          return res.status(400).json({ error: "modifiedBy field is required" });
+      }
+
+      const updatedSales = await Sales.findOneAndUpdate(
+          { salesId:salesId }, 
+          updateData, 
+          { new: true }
+      );
+
+      if (!updatedSales) {
+          return res.status(404).json({ message: "Sales record not found" });
+      }
+
+      res.status(200).json({ message: "Sales updated successfully", updatedSales });
+
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+      console.log("Failed to update Sales: " + error.message)
+  }
+});
+
+router.get("/history", async (req,res) => {
   try{
-    const updatedSale = await Sales.findOneAndUpdate({salesId:req.params.salesId},req.body,{new:true, runValidators:true});
-    if(!updatedSale) return res.status(404).json({message:"Sale not found"});
-    res.status(200).json({message:"Sale updated successfully",sale:updatedSale});
+    const salesHistory = await salesHistorySchema.find().sort({modifiedAt:-1});
+
+    res.status(200).json(salesHistory);
   }catch(err){
-    res.status(400).json({error:err.message})
+    res.status(500).json({error:err.message});
   }
 });
   
@@ -133,6 +150,12 @@ router.delete("/:salesId", async (req,res) => {
       await Credit.findOneAndDelete({ creditId:creditId}).session(session);
     }
 
+    // Increment remainingBags in StockSchema
+    const stock = await Stock.findOne({ lotName: sale.lotName }).session(session);
+    if (stock) {
+      stock.remainingBags += 1;
+      await stock.save({ session });
+    }
     await Sales.deleteOne({salesId:req.params.salesId}).session(session);
     await session.commitTransaction();
     session.endSession();
@@ -147,52 +170,12 @@ router.delete("/:salesId", async (req,res) => {
   
 router.get("/deletedSales", async (req, res) => {
   try {
-    const deletedSales = await DeletedSales.find();
+    const deletedSales = await DeletedSales.find().sort({deletedAt:-1});
     res.status(200).json(deletedSales);
   } catch (err) {
     res.status(500).json({ error: err.message });
     console.log("failed to fetch the deleted sales",err.message);
   }
 });
-  
-router.post("/undo-delete/:salesId", async(req,res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try{
-    const deletedSale = await DeletedSales.findOne({salesId:req.params.salesId}).session(session);
-    if(!deletedSale){
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(404).json({message:"Deleted sale not found"});
-    }
-    // Restore the sale back to SalesSchema
-    const restoredSale = new Sales({
-      salesId: deletedSale.salesId,
-      customerName: deletedSale.customerName,
-      numberOfKgs: deletedSale.numberOfKgs,
-      pricePerKg: deletedSale.pricePerKg,
-      lotName: deletedSale.lotName,
-      paymentType: deletedSale.paymentType,
-      totalAmount: deletedSale.totalAmount,
-      createdBy: deletedSale.createdBy,
-      modifiedBy: deletedSale.modifiedBy || null,
-    });
-
-    await restoredSale.save({ session });
-
-    await DeletedSales.deleteOne({salesId:req.params.salesId}).session(session);
-
-    await session.commitTransaction();
-    session.endSession();
-    res.status(200).json({message:"Deleted sale restored successfully", sale:restoredSale});
-  }catch(err){
-    await session.abortTransaction();
-    session.endSession();
-    res.status(500).json({error:err.message});
-    console.log("failed to restore the deleted sale",err.message);
-  }
-});
-
 
 module.exports = router;

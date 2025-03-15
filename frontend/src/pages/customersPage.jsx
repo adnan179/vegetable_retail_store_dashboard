@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/loadingSpinner';
 import AddCustomerForm from '../components/addCustomerForm';
 import { useAuth } from '../context/AuthContext';
+import CustomersHistory from '../components/customersHistory';
 
 const CustomersPage = () => {
   const { backendURL } = useAuth()
@@ -19,11 +20,12 @@ const CustomersPage = () => {
   const [error, setError] = useState(null);
   const [isEdit, setIsEdit] = useState(false);
   const [balanceSort, setBalanceSort] = useState("");
+  const [isHistoryData, setIsHistoryData] = useState(false);
 
     
-    useEffect(() =>{
-        fetchCustomers();
-      },[]);
+  useEffect(() =>{
+    fetchCustomers();
+  },[]);
     
   //function to fetch all customers
   const fetchCustomers = async () => {
@@ -33,41 +35,11 @@ const CustomersPage = () => {
         if (response.status === 200) {
           let data = response.data;
 
-          // Function to extract and convert date from createdBy
-          const parseCreatedByDate = (createdBy) => {
-            if (!createdBy) return null;
-            
-              const parts = createdBy.split("-");
-              if (parts.length < 5) return null; // Ensure format is valid
-              
-              const [name, day, month, year, time] = parts;
-              
-              // Convert time to 24-hour format for Date parsing
-              let [timeValue, period] = time.split(" ");
-              let [hours, minutes] = timeValue.split(":").map(Number);
+          setCustomers(data);
+          setFilteredCustomers(data);
 
-              if (period.toLowerCase() === "pm" && hours !== 12) {
-                hours += 12;
-              } else if (period.toLowerCase() === "am" && hours === 12) {
-                hours = 0;
-              }
-
-              // Create a valid date object
-              return new Date(`${year}-${month}-${day}T${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`);
-            };
-
-            // Sorting customers based on `createdBy` date extracted
-            const sortedCustomers = data.sort((a, b) => {
-              const dateA = parseCreatedByDate(a.createdBy) || new Date(0);
-              const dateB = parseCreatedByDate(b.createdBy) || new Date(0);
-              return dateB - dateA; // Sort in descending order (most recent first)
-            });
-
-          setCustomers(sortedCustomers);
-          setFilteredCustomers(sortedCustomers);
-
-          const uniqueVillages = [...new Set(sortedCustomers.map(customer => customer.villageName))];
-          const uniqueGroups = [...new Set(sortedCustomers.map(customer => customer.groupName))];
+          const uniqueVillages = [...new Set(data.map(customer => customer.villageName))];
+          const uniqueGroups = [...new Set(data.map(customer => customer.groupName))];
 
           setVillageNames(uniqueVillages);
           setGroups(uniqueGroups);
@@ -100,9 +72,9 @@ const CustomersPage = () => {
 
     //sort based on balance
     if (balanceSort === "lowToHigh"){
-      filteredData.sort((a,b) => a.balance - b.balance);
-    }else if ( balanceSort === "highToLow"){
       filteredData.sort((a,b) => b.balance - a.balance);
+    }else if ( balanceSort === "highToLow"){
+      filteredData.sort((a,b) => a.balance - b.balance);
     }
     setFilteredCustomers(filteredData);
   },[selectedGroup,selectedVillage,customers, balanceSort]);
@@ -169,6 +141,10 @@ const CustomersPage = () => {
         <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-white font-medium bg-green-600 shadow-sm">
           Add New Customer
         </button>
+        <button onClick={() => setIsHistoryData(!isHistoryData)}
+          className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
+          History
+        </button>
       </div>
       {/* filters */}
       {/* table */}
@@ -181,7 +157,7 @@ const CustomersPage = () => {
             <th className="border border-black pl-2">Group</th>
             <th className="border border-black pl-2">Balance</th>
             <th className="border border-black pl-2">Created By</th>
-            <th className="border border-black pl-2">Modified By</th>
+            <th className="border border-black pl-2">Created At</th>
             <th className="border border-black p-2"></th>
             <th className="border border-black p-2"></th>
           </tr>
@@ -201,7 +177,7 @@ const CustomersPage = () => {
                   <td className="border border-black p-2">{customer.groupName}</td>
                   <td className="border border-black p-2 text-red-500 font-medium">{customer.balance}</td>
                   <td className="border border-black p-2">{customer.createdBy}</td>
-                  <td className="border border-black p-2">{customer.modifiedBy ? customer.modifiedBy : ""}</td>
+                  <td className="border border-black p-2">{new Date(customer.createdAt).toLocaleString()}</td>
                   <td className="border border-black p-2">
                     <button onClick={() => handleEdit(customer)}className="bg-gray-200 text-[#1E90FF] font-bold cursor-pointer px-4 py-2 rounded">
                       Edit
@@ -232,6 +208,15 @@ const CustomersPage = () => {
         />
       </div>
       )}
+      {isHistoryData && (
+          <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+            <div className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
+              <div className='h-full overflow-y-auto p-6'>
+                <CustomersHistory onClose={() => setIsHistoryData(false)}/>
+              </div>
+            </div>
+          </div>
+        )}
     </section>
   )
 }

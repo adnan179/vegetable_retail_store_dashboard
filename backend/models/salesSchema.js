@@ -36,9 +36,29 @@ const salesSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
-    modifiedBY:{
+    createdAt:{
+        type: Date,
+        default: Date.now,
+    },
+    modifiedBy:{
         type: String,
     },
+}, {timestamps:true});
+
+salesSchema.pre("findOneAndUpdate", async function (next) {
+    const SalesHistory = require("./salesHistorySchema");
+    const sales = await this.model.findOne(this.getQuery());
+
+    if (sales){
+        await SalesHistory.create({
+            salesId:sales.salesId,
+            previousData: sales.toObject(),
+            newData:this.getUpdate(),
+            modifiedBy:this.getUpdate().modifiedBy,
+            modifiedAt: new Date()
+        });
+    }
+    next();
 });
 
-module.exports = mongoose.model("SalesSchema",salesSchema);
+module.exports = mongoose.model("Sales",salesSchema);

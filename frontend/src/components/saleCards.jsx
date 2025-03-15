@@ -2,68 +2,63 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:5000", {
+  transports: ["websocket", "polling"],
+  reconnection: true,
+  reconnectionAttempts: 10,
+  reconnectionDelay: 5000,
+});
 
-const SaleCards = () => {
+
+const SaleCards = ({ fromDate, fromTime, toDate, toTime }) => {
   const { backendURL } = useAuth();
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState({});
 
-  
   // Function to fetch sales
   const fetchSales = async () => {
     try {
       const response = await axios.get(`${backendURL}/sales`);
-      const data = await response.data;
+      if (response.status === 200) {
+        let data = response.data;
+        // Function to convert AM/PM time to 24-hour format
+        const convertTo24Hour = (time) => {
+          if (!time) return null;
+          const [hours, minutes, period] = time.match(/(\d+):(\d+) (AM|PM)/).slice(1);
+          let hour = parseInt(hours, 10);
+          if (period === "PM" && hour !== 12) hour += 12;
+          if (period === "AM" && hour === 12) hour = 0;
+          return `${hour.toString().padStart(2, "0")}:${minutes}`;
+        };
 
-      // Get today's date in "DD-MM-YYYY" format
-      const today = new Date();
-      const todayStr = today.toLocaleDateString("en-GB").replace(/\//g, "-");
+        // Convert selected times
+        const fromTimeFormatted = convertTo24Hour(fromTime);
+        const toTimeFormatted = convertTo24Hour(toTime);
 
-      // Function to extract sale datetime from createdBy
-      const parseSaleDate = (createdBy) => {
-        if (!createdBy) return null;
+        // Filtering logic only applies if all four values are selected
+        if (fromDate && fromTimeFormatted && toDate && toTimeFormatted) {
+          const fromDateTime = new Date(`${fromDate}T${fromTimeFormatted}:00`);
+          const toDateTime = new Date(`${toDate}T${toTimeFormatted}:59`);
+          data = data.filter((sale) => {
+            const saleDateTime = new Date(sale.createdAt);
+            return saleDateTime >= fromDateTime && saleDateTime <= toDateTime;
+          });
+        } else {
+          // Default: Show today's sales
+          const today = new Date().toISOString().split("T")[0];
+          data = data.filter((sale) => sale.createdAt.startsWith(today));
+        }
 
-        const parts = createdBy.split("-");
-        if (parts.length < 5) return null;
-
-        const [name, day, month, year, time] = parts;
-        const timeParts = time.split(" ");
-
-        if (timeParts.length < 2) return null; // Ensure AM/PM is present
-
-        let [timeValue, period] = timeParts;
-        let [hours, minutes] = timeValue.split(":").map(Number);
-
-        period = period.toLowerCase();
-        if (period === "pm" && hours !== 12) hours += 12;
-        if (period === "am" && hours === 12) hours = 0;
-
-        // Ensure it's today's sales
-        if (`${day}-${month}-${year}` !== todayStr) return null;
-
-        return new Date(`${year}-${month}-${day}T${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`);
-      };
-
-      // Filter and sort today's sales
-      const todaySales = data
-        .map(sale => ({ ...sale, parsedDate: parseSaleDate(sale.createdBy) }))
-        .filter(sale => sale.parsedDate !== null)
-        .sort((a, b) => b.parsedDate - a.parsedDate); // Sort by recent time
-
-      setSales(todaySales);
-      groupSales(todaySales);
-    } catch (error) {
+        setSales(data);
+        groupSales(data);
+      }
+    } catch (err) {
       toast.error("Error fetching sales");
-      console.error("Error fetching sales:", error);
+      console.error("Error fetching sales:", err);
     }
   };
-
-  useEffect(() => {
-    fetchSales();
-  },[]);
 
   // Function to group sales by customerName
   const groupSales = (salesData) => {
@@ -80,17 +75,20 @@ const SaleCards = () => {
 
   useEffect(() => {
     fetchSales();
+  }, [fromDate, fromTime, toDate, toTime]);
 
-    // Listen for new sales
-    socket.on('newSale', (newSale) => {
-      setSales(prevSales => [...prevSales, newSale]);
-    });
-
-    // Cleanup function
+  useEffect(() => {
+    const handleNewSale = () => {
+      fetchSales();
+    };
+  
+    socket.on("newSale", handleNewSale);
+  
     return () => {
-      socket.off('newSale');
+      socket.off("newSale", handleNewSale);
     };
   }, []);
+  
 
   return (
     <div className="w-full h-full flex flex-col gap-5 p-3 rounded-md shadow bg-white">
@@ -98,34 +96,35 @@ const SaleCards = () => {
       <div className="flex flex-col gap-3">
         {Object.entries(filteredSales).length > 0 ? (
           Object.entries(filteredSales).map(([customerName, salesList]) => {
-            const isCredit = salesList.some(sale => sale.paymentType.includes("credit"));
+            const isCredit = salesList.some((sale) => sale.paymentType.includes("credit"));
+            const amount = salesList.reduce((acc, sale) => acc + sale.totalAmount, 0);
             return (
-              <div key={customerName} className={`border p-3 rounded-md shadow-md ${isCredit ? 'bg-red-600 text-white' : 'bg-green-500 text-white'}`}>
-                <h3 className="text-lg font-bold">{customerName}</h3>
+              <div
+                key={customerName}
+                className={`border p-3 rounded-md shadow-md flex flex-col gap-2 ${!isCredit ? "bg-[#e25c5a] text-white" : "bg-green-500 text-white"}`}
+              >
+                <h3 className="text-xl font-bold">{customerName}</h3>
                 <table>
                   <thead>
                     <tr>
-                      <th className="border border-white p-2">Sales Id</th>
                       <th className="border border-white p-2">Lot Name</th>
                       <th className="border border-white p-2">No.of Kgs</th>
                       <th className="border border-white p-2">Price/Kg</th>
                       <th className="border border-white p-2">Amount</th>
-                      <th className="border border-white p-2">Payment Type</th>
                     </tr>
                   </thead>
                   <tbody>
                     {salesList.map((sale) => (
                       <tr key={sale.salesId}>
-                        <td className="border border-white p-2">{sale.salesId}</td>
-                        <td className="border border-white p-2">{sale.lotName}</td>
+                        <td className="border border-white p-2">{sale.lotName.split("-").slice(0, 3).join("-")}</td>
                         <td className="border border-white p-2">{sale.numberOfKgs}</td>
-                        <td className="border border-white p-2">₹{sale.pricePerKg}</td>
-                        <td className="border border-white p-2">₹{sale.totalAmount}</td>
-                        <td className="border border-white p-2">{sale.paymentType}</td>
+                        <td className="border border-white p-2">{sale.pricePerKg}</td>
+                        <td className="border border-white p-2">{sale.totalAmount}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                <p className="text-white font-medium text-lg">Total amount: {amount}</p>
               </div>
             );
           })
