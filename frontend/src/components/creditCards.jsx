@@ -4,7 +4,7 @@ import LoadingSpinner from './loadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import { io } from "socket.io-client";
 
-const socket = io("https://vegetable-retail-store-dashboard.vercel.app", {
+const socket = io("https://vegetable-retail-store-server.onrender.com", {
   transports: ["websocket", "polling"],
   withCredentials: true,
   reconnection: true,
