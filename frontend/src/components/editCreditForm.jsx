@@ -5,6 +5,8 @@ import InputField from './inputField';
 import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => {
   const selectedCreditId = credit?.creditId;
@@ -138,18 +140,24 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
           }}
         />
       </div>
-      <select className='w-full p-2 bg-[#d9d9d9] rounded-md' 
-        value={formData.customerName}
-        onChange={(e) => {
-            const selected = customers.find(c => c.customerName === e.target.value);
-            setFormData({...formData, customerName: e.target.value});
-            setSelectedCustomer(selected || null);
-        }}>
-        <option value="">Customer Name</option>
-        {customers && customers.map((customer, idx) => (
-            <option key={idx} value={customer.customerName}>{customer.customerName}</option>
-        ))}
-      </select>
+      <Autocomplete
+        className="bg-gray-300 rounded-md w-full"
+        options={customers || []}
+        getOptionLabel={(customer) => customer?.customerName || ''}
+        value={customers?.find(c => c.customerName === formData.customerName) || null} // Ensures correct value selection
+        onChange={(event, newValue) => {
+          setFormData({ ...formData, customerName: newValue?.customerName || '' });
+          setSelectedCustomer(newValue || null);
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Customer Name"
+            variant="outlined"
+            fullWidth
+          />
+        )}
+      />
 
       {selectedCustomer && (
         <h2 className='w-full text-[16px]'>Balance: <span className='text-red-600 font-medium'>{selectedCustomer.balance}</span></h2>

@@ -5,6 +5,8 @@ import InputField from './inputField';
 import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
     const selectedLotName = stock?.lotName;
@@ -171,20 +173,38 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
             <h1 className='text-[16px] font-medium text-black'>{formData.lotName.split('-').slice(0, 3).join('-')}</h1>
         )}
         {/* Input Fields */}
-        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.farmerName}
-            onChange={(e) => setFormData({...formData,farmerName:e.target.value})}>
-            <option value="">Farmer Name</option>
-            {farmers && farmers.map((farmer,idx) => (
-                <option key={idx} value={farmer.farmerName}>{farmer.farmerName}</option>
-            ))}
-        </select>
-        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.vegetableName}
-            onChange={(e) => setFormData({...formData,vegetableName:e.target.value})}>
-            <option value="">Vegetable Name</option>
-            {vegetables && vegetables.map((vegetable,idx) => (
-                <option key={idx} value={vegetable.vegetableName}>{vegetable.vegetableName}</option>
-            ))}
-        </select>
+        <Autocomplete
+            className="bg-gray-300 rounded-md border-none focus:outline-none w-full"
+            options={farmers && farmers.map(farmer => farmer.farmerName)}
+            value={formData.farmerName}
+            onChange={(event, newValue) => {
+                setFormData({...formData,farmerName:newValue || ''});
+            }}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    label="Farmer Name"
+                    variant="outlined"
+                    fullWidth
+                />
+            )}
+        />
+        <Autocomplete
+            className="bg-gray-300 rounded-md border-none focus:outline-none w-full"
+            options={vegetables && vegetables.map(vegetable => vegetable.vegetableName)}
+            value={formData.vegetableName}
+            onChange={(event, newValue) => {
+                setFormData({...formData,vegetableName:newValue || ''});
+            }}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    label="Vegetable Name"
+                    variant="outlined"
+                    fullWidth
+                />
+            )}
+        />
         <InputField
             label="Number of Bags"
             placeholder="Enter no.of bags"

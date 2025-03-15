@@ -5,3 +5,21 @@
 body{
     background-color: #F2F0EB;
 }
+
+/* Make text white for MUI Autocomplete and TextField */
+.mui-white-text .MuiOutlinedInput-root {
+    color: white !important; /* Input text color */
+  }
+  
+  .mui-white-text .MuiInputLabel-root {
+    color: white !important; /* Label color */
+  }
+  
+  .mui-white-text .MuiInputLabel-root.Mui-focused {
+    color: white !important; /* Keep label white when focused */
+  }
+  
+  .mui-white-text .MuiOutlinedInput-root .MuiAutocomplete-input {
+    color: white !important; /* Ensures Autocomplete input text stays white */
+  }
+  

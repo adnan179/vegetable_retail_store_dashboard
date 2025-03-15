@@ -5,6 +5,8 @@ import InputField from './inputField';
 import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit}) => {
     const selectedCustomerName = customer?.customerName;
@@ -55,8 +57,6 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        
         // formatted data for submission
         const formattedData = {
             customerName: formData.customerName,
@@ -155,12 +155,14 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
         value={formData.balance}
         onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
       />
-      <select className='w-full p-2 bg-[#d9d9d9] rounded-md' onChange={(e) => setFormData({...formData, groupName:e.target.value})} value={formData.groupName}>
-        <option value="">Group</option>
-        {groups && groups.map(group => (
-            <option key={group.groupName} value={group.groupName}>{group.groupName}</option>
-        ))}
-      </select>
+      <Autocomplete className='w-full bg-gray-200 rounded-md'
+        options={groups.map(group => group.groupName)}
+        value={formData.groupName}
+        onChange={(event, newValue) => {
+          setFormData({ ...formData, groupName: newValue || '' });
+        }}
+        renderInput={(params) => <TextField {...params} label="Group" variant="outlined" fullWidth />}
+      />
         
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">

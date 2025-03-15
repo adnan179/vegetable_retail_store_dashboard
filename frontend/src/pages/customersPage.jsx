@@ -5,6 +5,8 @@ import LoadingSpinner from '../components/loadingSpinner';
 import AddCustomerForm from '../components/addCustomerForm';
 import { useAuth } from '../context/AuthContext';
 import CustomersHistory from '../components/customersHistory';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const CustomersPage = () => {
   const { backendURL } = useAuth()
@@ -100,30 +102,44 @@ const CustomersPage = () => {
     <section className="flex flex-col w-full min-h-screen ml-[100px] p-5">
       {/* filters */}
       <div className="flex flex-row gap-5 text-lg">
-        <select value={selectedVillage}
-        onChange={(e) => setSelectedVillage(e.target.value)}
-          className="px-4 py-2 text-white rounded-md font-medium bg-blue-400 shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none">
-            <option value="">Village Name</option>
-            {villageNames && villageNames.map((village,idx) => (
-              <option key={idx} value={village}>
-                {village}
-              </option>
-            ))}
-        </select>
-        <select value={selectedGroup}
-          onChange={(e) => setSelectedGroup(e.target.value)}
-          className="px-4 py-2 text-white rounded-md font-medium bg-blue-400 shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none">
-            <option value="">Group</option>
-            {groups && groups.map((group,idx) => (
-              <option key={idx} value={group}>
-                {group}
-              </option>
-            ))}
-        </select>
+        <Autocomplete
+          className="mui-white-text w-[200px] rounded-md bg-blue-500"
+          options={villageNames && villageNames.map((village) => village)} 
+          value={selectedVillage || null} 
+          onChange={(event, newValue) => {
+            setSelectedVillage(newValue || null);
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Village Name"
+              variant="outlined"
+              fullWidth
+              className="mui-white-text"
+            />
+          )}
+        />
+        <Autocomplete
+          className="mui-white-text w-[200px] rounded-md bg-blue-500"
+          options={groups && groups.map((group) => group)} 
+          value={selectedGroup || null} 
+          onChange={(event, newValue) => {
+            setSelectedGroup(newValue || null);
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Group Name"
+              variant="outlined"
+              fullWidth
+              className="mui-white-text"
+            />
+          )}
+        />
         <select 
           value={balanceSort}
           onChange={(e) => setBalanceSort(e.target.value)}
-          className="px-4 py-2 text-white rounded-md font-medium bg-blue-400 shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none"
+          className="px-4 py-2 text-white rounded-md font-medium bg-blue-500 shadow-sm focus:ring-1 focus:ring-[#1E90FF] focus:outline-none"
         >
           <option value="">Sort by Balance</option>
           <option value="lowToHigh">Low to High</option>

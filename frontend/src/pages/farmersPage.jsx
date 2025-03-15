@@ -4,6 +4,8 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/loadingSpinner';
 import { useAuth } from '../context/AuthContext';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const FarmersPage = () => {
   const { backendURL } = useAuth()
@@ -110,25 +112,26 @@ const FarmersPage = () => {
     <section className="flex flex-col w-full min-h-screen p-5 ml-[100px] overflow-auto">
         {/* filters */}
         <div className="flex flex-row gap-5">
-            <select value={selectedVillage}
-            onChange={(e) => setSelectedVillage(e.target.value)}
-              className="px-4 py-2 text-lg rounded-md text-white font-medium bg-blue-400 shadow-sm">
-                <option value="">Village Name</option>
-                {villageNames && villageNames.map((village,idx) => (
-                  <option key={idx} value={village}>
-                    {village}
-                  </option>
-                ))}
-            </select>
-            
-           <button 
-              onClick={() => setSelectedVillage("")} 
-           className="px-4 py-2 text-lg rounded-md text-white font-medium bg-blue-400 shadow-sm">
-              Remove Filters
-            </button>
-            <button onClick={() => setIsFormOpen(true)} className="p-4 rounded-md text-lg text-white font-medium bg-green-500 shadow-sm">
-              Add New Farmer
-            </button>
+          <Autocomplete
+            className="w-[200px] rounded-md bg-blue-500 mui-white-text"
+            options={villageNames && villageNames.map((village) => village)}
+            value={selectedVillage || null} // Ensures correct value selection
+            onChange={(event, newValue) => {
+              setSelectedVillage(newValue)
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Village Name"
+                variant="outlined"
+                fullWidth
+                className='bg-transparent mui-white-text'
+              />
+            )}
+          />
+          <button onClick={() => setIsFormOpen(true)} className="p-4 rounded-md text-lg text-white font-medium bg-green-500 shadow-sm">
+            Add New Farmer
+          </button>
         </div>
         {/* filters */}
         {/* table */}

@@ -6,6 +6,8 @@ import AddLotForm from '../components/addLotForm';
 import InputField from '../components/inputField';
 import { useAuth } from '../context/AuthContext';
 import StockHistory from '../components/stockHistory';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const StockPage = () => {
   const { user, backendURL } = useAuth();
@@ -193,12 +195,12 @@ const StockPage = () => {
               type="date" 
               value={fromDate} 
               onChange={(e) => setFromDate(e.target.value)} 
-              className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm" 
+              className="p-4 rounded-md text-white font-medium bg-blue-400 shadow-sm" 
             />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm font-medium'>From Time:</label>
-            <select value={fromTime} onChange={(e) => setFromTime(e.target.value)} className="px-4 py-2 rounded-md bg-blue-400 text-white">
+            <select value={fromTime} onChange={(e) => setFromTime(e.target.value)} className="p-4 rounded-md bg-blue-400 text-white">
               {generateTimeSlots().map((slot, idx) => <option key={idx} value={slot}>{slot}</option>)}
             </select>
           </div>
@@ -209,44 +211,59 @@ const StockPage = () => {
             <input 
                 type="date" 
                 value={toDate} 
-                onChange={(e) => setToDate(e.target.value)} className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm" 
+                onChange={(e) => setToDate(e.target.value)} className="p-4 rounded-md text-white font-medium bg-blue-400 shadow-sm" 
             />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm font-medium'>To Time:</label>
-            <select value={toTime} onChange={(e) => setToTime(e.target.value)} className="px-4 py-2 rounded-md bg-blue-400 text-white">
+            <select value={toTime} onChange={(e) => setToTime(e.target.value)} className="p-4 rounded-md bg-blue-400 text-white">
               {generateTimeSlots().map((slot, idx) => <option key={idx} value={slot}>{slot}</option>)}
             </select>
           </div>
           <button onClick={() => setIsHistory(!isHistory)}
-          className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
-          History
-        </button>
+            className="p-4 px-8 rounded-md text-white font-medium bg-blue-400 shadow-sm">
+            History
+          </button>
+          <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-white font-medium bg-green-500 shadow-sm">
+              Add New Lot
+            </button>
         </div>
         <div className='flex flex-row gap-2'>
-          <select value={selectedFarmer}
-          onChange={(e) => setSelectedFarmer(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
-              <option value="">Farmers</option>
-              {farmers && farmers.map((farmer,idx) => (
-                <option key={idx} value={farmer}>
-                  {farmer}
-                </option>
-              ))}
-          </select>
-          <select value={selectedVegetable}
-            onChange={(e) => setSelectedVegetable(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
-              <option value="">Vegetables</option>
-              {vegetables && vegetables.map((vegetable,idx) => (
-                <option key={idx} value={vegetable}>
-                  {vegetable}
-                </option>
-              ))}
-          </select>
+          <Autocomplete
+            className="bg-blue-500 rounded-md border-none mui-white-text w-[150px]"
+            options={farmers.map(farmer => farmer)}
+            value={selectedFarmer}
+            onChange={(event, newValue) => {
+              setSelectedFarmer(newValue || '');
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Farmer Name"
+                variant="outlined"
+                fullWidth
+              />
+            )}
+          />
+            <Autocomplete
+            className="bg-blue-500 rounded-md border-none mui-white-text w-[150px]"
+            options={vegetables.map(veggie => veggie)}
+            value={selectedVegetable}
+            onChange={(event, newValue) => {
+              setSelectedVegetable(newValue || '');
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Vegetable Name"
+                variant="outlined"
+                fullWidth
+              />
+            )}
+          />
           <select value={selectedPaymentStatus}
             onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
+            className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
               <option value="">Payment Status</option>
               {paymentStatuses && paymentStatuses.map((paymentStatus,idx) => (
                 <option key={idx} value={paymentStatus}>
@@ -256,7 +273,7 @@ const StockPage = () => {
           </select>
           <select value={selectedStockStatus}
             onChange={(e) => setSelectedStockStatus(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
+            className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
               <option value="">Stock Status</option>
               <option value="in stock">
                   In stock
@@ -271,9 +288,6 @@ const StockPage = () => {
               }} 
               className="px-4 py-2 rounded-md text-white font-medium bg-red-500 shadow-sm">
               Remove Filters
-          </button>
-          <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md text-white font-medium bg-green-500 shadow-sm">
-            Add New Lot
           </button>
         </div>
       </div>

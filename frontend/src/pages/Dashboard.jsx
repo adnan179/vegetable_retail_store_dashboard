@@ -6,11 +6,13 @@ import AddLotForm from '../components/addLotForm';
 import AddSalesForm from '../components/addSalesForm';
 import SaleCards from '../components/saleCards';
 import CreditCards from '../components/creditCards';
+import EditCreditForm from "../components/editCreditForm";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [isNewLot, setIsNewLot] = useState(false);
   const [isNewSale, setIsNewSale] = useState(false);
+  const [isNewCredit, setIsNewCredit] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [fromTime, setFromTime] = useState("");
   const [toDate, setToDate] = useState("");
@@ -44,6 +46,10 @@ const Dashboard = () => {
         <button onClick={() => setIsNewLot(true)} className='w-[200px] h-[200px] bg-green-500 rounded-md flex flex-col justify-center items-center text-white font-medium'>
           <img src={addIcon} alt='Add new sale' className='w-4 h-4 object-contain'/>
           <span>Add New Lot</span>
+        </button>
+        <button onClick={() => setIsNewCredit(true)} className='w-[200px] h-[200px] bg-green-500 rounded-md flex flex-col justify-center items-center text-white font-medium'>
+          <img src={addIcon} alt='Add new sale' className='w-4 h-4 object-contain'/>
+          <span>Pay Jamalu</span>
         </button>
       </div>
 
@@ -99,6 +105,15 @@ const Dashboard = () => {
           <AddSalesForm 
             onClose={() => setIsNewSale(false)}
             onCloseEdit={() => setIsNewSale(false)}
+          />
+        </div>
+      )}
+
+      {isNewCredit && (
+        <div className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
+          <EditCreditForm
+            onClose={() => setIsNewCredit(false)}
+            onCloseEdit={() => setIsNewCredit(false)}
           />
         </div>
       )}

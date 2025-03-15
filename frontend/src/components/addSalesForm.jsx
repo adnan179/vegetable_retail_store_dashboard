@@ -5,7 +5,8 @@ import InputField from './inputField';
 import { toast } from 'react-toastify';
 import axios from "axios";
 import LoadingSpinner from './loadingSpinner';
-
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     const selectedSale = sale || {};
@@ -215,22 +216,39 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                 onChange={(e) => setFormData({...formData, customerName: e.target.value })}
             />
         ):(
-            <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.customerName}
-                onChange={(e) => setFormData({...formData,customerName:e.target.value})}>
-                <option value="">Customer Name</option>
-                {customers && customers.map((customer,idx) => (
-                    <option key={idx} value={customer.customerName}>{customer.customerName}</option>
-                ))}
-            </select>
+            <Autocomplete
+                className="bg-gray-300 rounded-md w-full"
+                options={customers && customers.map(customer => customer.customerName)}
+                value={formData.customerName}
+                onChange={(event, newValue) => {
+                    setFormData({...formData,customerName:newValue || ''});
+                }}
+                renderInput={(params) => (
+                    <TextField
+                    {...params}
+                    label="Customer Name"
+                    variant="outlined"
+                    fullWidth
+                    />
+                )}
+            />
         )}
-        
-        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.lotName}
-            onChange={(e) => setFormData({...formData,lotName:e.target.value})}>
-            <option value="">Lot Name</option>
-            {lots && lots.map((lot,idx) => (
-                <option key={idx} value={lot.lotName}>{lot.lotName.split('-').slice(0,3).join('-')}</option>
-            ))}
-        </select>
+        <Autocomplete
+            className="bg-gray-300 rounded-md w-full"
+            options={lots || []}
+            getOptionLabel={(lot) => lot?.lotName?.split('-').slice(0, 3).join('-') || ''}
+            value={lots?.find(lot => lot.lotName === formData.lotName) || null} // Ensures selected value
+            onChange={(event, newValue) => setFormData({ ...formData, lotName: newValue?.lotName || '' })}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    label="Lot Name"
+                    variant="outlined"
+                    fullWidth
+                />
+            )}
+        />
+
         <InputField
             label="Number of Kgs"
             placeholder="Enter no.of Kgs"

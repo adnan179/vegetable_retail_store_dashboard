@@ -5,6 +5,8 @@ import LoadingSpinner from '../components/loadingSpinner';
 import EditCreditForm from '../components/editCreditForm';
 import { useAuth } from '../context/AuthContext';
 import CreditsHistory from '../components/creditHistory';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const CreditsPage = () => {
   const { backendURL } = useAuth();
@@ -197,20 +199,25 @@ const CreditsPage = () => {
               {generateTimeSlots().map((slot, idx) => <option key={idx} value={slot}>{slot}</option>)}
             </select>
           </div>
-            
-          <select value={selectedCustomer}
-            onChange={(e) => setSelectedCustomer(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
-              <option value="">Customers</option>
-              {customers && customers.map((customer,idx) => (
-                <option key={idx} value={customer}>
-                  {customer}
-                </option>
-              ))}
-          </select>
+          <Autocomplete
+            className="bg-blue-500 rounded-md mui-white-text w-[200px] border-none focus:outline-none"
+            options={customers && customers.map((customer) => customer)} 
+            value={selectedCustomer || null} 
+            onChange={(event, newValue) => {
+              setSelectedCustomer(newValue || null);
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Customers"
+                variant="outlined"
+                fullWidth
+              />
+            )}
+          />
           <select value={selectedAmount}
             onChange={(e) => setSelectedAmount(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm">
+            className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
               <option value="">Amount</option>
               {amountRanges && amountRanges.map((amountRange,idx) => (
                 <option key={idx} value={amountRange}>

@@ -6,6 +6,8 @@ import AddSalesForm from '../components/addSalesForm';
 import { useAuth } from '../context/AuthContext';
 import DeletedSales from '../components/deletedSales';
 import SalesHistory from '../components/salesHistory';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const SalesPage = () => {
   const { backendURL, user} = useAuth()
@@ -227,27 +229,33 @@ const SalesPage = () => {
               {generateTimeSlots().map((slot, idx) => <option key={idx} value={slot}>{slot}</option>)}
             </select>
           </div>
+          <Autocomplete
+            className="bg-blue-500 mui-white-text rounded-md w-[150px]"
+            options={customers && customers.map(customer => customer)}
+            value={selectedCustomer}
+            onChange={(event, newValue) => {
+              setSelectedCustomer(newValue || '');
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Customer"
+                variant="outlined"
+                fullWidth
+              />
+            )}
+          />
+          <Autocomplete
+            className="mui-white-text w-[200px] bg-blue-400 rounded-md"
+            options={lots || []}
+            getOptionLabel={(lot) => lot.split('-').slice(0, 3).join('-')}
+            value={selectedLot}
+            onChange={(event, newValue) => setSelectedLot(newValue || '')}
+            renderInput={(params) => (
+              <TextField {...params} label="Lot names" variant="outlined" fullWidth />
+            )}
             
-          <select value={selectedCustomer}
-            onChange={(e) => setSelectedCustomer(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none">
-              <option value="">Customers</option>
-              {customers && customers.map((customer,idx) => (
-                <option key={idx} value={customer}>
-                  {customer}
-                </option>
-              ))}
-          </select>
-          <select value={selectedLot}
-            onChange={(e) => setSelectedLot(e.target.value)}
-            className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none">
-              <option value="">Lot names</option>
-              {lots && lots.map((lot,idx) => (
-                <option key={idx} value={lot}>
-                  {lot.split('-').slice(0,3).join('-')}
-                </option>
-              ))}
-          </select>
+          />
           <select value={selectedPaymentType}
             onChange={(e) => setSelectedPaymentType(e.target.value)}
             className="px-4 py-2 rounded-md text-white font-medium bg-blue-400 shadow-sm focus:outline-none">
