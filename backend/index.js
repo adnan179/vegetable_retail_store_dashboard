@@ -7,21 +7,17 @@ const { Server } = require("socket.io");
 const app = express();
 const PORT = 5000;
 const server = http.createServer(app);
+app.use(cors({
+  origin: ["https://vegetable-retail-store-front-end.vercel.app", "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 const io = new Server(server, {
   cors: {
-    origin: "https://vegetable-retail-store-front-end.vercel.app",
+    origin: ["https://vegetable-retail-store-front-end.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE"],
   }
 });
-
-// Middleware
-app.use(express.json());
-app.use(cors({
-  origin: "https://vegetable-retail-store-front-end.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
 
 // Attach io to req before defining routes
 app.use((req, res, next) => {
