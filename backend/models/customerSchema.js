@@ -14,6 +14,11 @@ const customersSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    kuli:{
+        type:Boolean,
+        default: false,
+        required: true
+    },
     groupName:{
         type: String,
         required: true

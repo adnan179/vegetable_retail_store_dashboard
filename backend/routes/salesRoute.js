@@ -178,4 +178,16 @@ router.get("/deletedSales", async (req, res) => {
   }
 });
 
+router.get("/kuli", async (req, res) => {
+  try {
+      const kuliCustomers = await Customer.find({ kuli: true }).select("customerName");
+      const customerNames = kuliCustomers.map(c => c.customerName);
+
+      const sales = await Sales.find({ customerName: { $in: customerNames } });
+      res.status(200).json(sales);
+  } catch (error) {
+      res.status(500).json({ error: "Error fetching sales" });
+  }
+});
+
 module.exports = router;

@@ -17,6 +17,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
         villageName:isEdit ? customer?.villageName :"",
         groupName:isEdit ? customer?.groupName :"",
         balance:isEdit ? customer?.balance:0,
+        kuli:isEdit ? customer?.kuli : "",
     });
     const [groups, setGroups] = useState([]);
     const [error, setError] = useState(null);
@@ -51,7 +52,8 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             customerName:"",
             phoneNumber:"",
             villageName:"",
-            groupName:""
+            groupName:"",
+            kuli:""
         });
     };
 
@@ -63,6 +65,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             phoneNumber: formData.phoneNumber, 
             villageName: formData.villageName.toLowerCase(),
             groupName: formData.groupName.toLowerCase(),
+            kuli: formData.kuli,
             balance: formData.balance,
             createdBy: user.userName
         };
@@ -94,6 +97,7 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             phoneNumber: formData.phoneNumber,
             villageName: formData.villageName.toLowerCase(),
             groupName: formData.groupName.toLowerCase(),
+            kuli: formData.kuli,
             balance: formData.balance,
             modifiedBy: user.userName
             
@@ -130,39 +134,46 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             }}/>
         </div>
         {/* Reusable Input Fields */}
-      <InputField
-        inputRef={inputRef}
-        label="Customer Name"
-        placeholder="Enter Customer Name"
-        value={formData.customerName}
-        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-      />
-      <InputField
-        label="Village Name"
-        placeholder="Enter Village Name"
-        value={formData.villageName}
-        onChange={(e) => setFormData({ ...formData, villageName: e.target.value })}
-      />
-      <InputField
-        label="Phone Number"
-        placeholder="Enter Phone Number"
-        value={formData.phoneNumber}
-        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-      />
-      <InputField
-        label="Balance"
-        placeholder="Enter balance amount"
-        value={formData.balance}
-        onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-      />
-      <Autocomplete className='w-full bg-gray-200 rounded-md'
-        options={groups.map(group => group.groupName)}
-        value={formData.groupName}
-        onChange={(event, newValue) => {
-          setFormData({ ...formData, groupName: newValue || '' });
-        }}
-        renderInput={(params) => <TextField {...params} label="Group" variant="outlined" fullWidth />}
-      />
+        <InputField
+            inputRef={inputRef}
+            label="Customer Name"
+            placeholder="Enter Customer Name"
+            value={formData.customerName}
+            onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+        />
+        <InputField
+            label="Village Name"
+            placeholder="Enter Village Name"
+            value={formData.villageName}
+            onChange={(e) => setFormData({ ...formData, villageName: e.target.value })}
+        />
+        <InputField
+            label="Phone Number"
+            placeholder="Enter Phone Number"
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+        />
+        <InputField
+            label="Balance"
+            placeholder="Enter balance amount"
+            value={formData.balance}
+            onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+        />
+        <Autocomplete className='w-full bg-gray-200 rounded-md'
+            options={groups.map(group => group.groupName)}
+            value={formData.groupName}
+            onChange={(event, newValue) => {
+            setFormData({ ...formData, groupName: newValue || '' });
+            }}
+            renderInput={(params) => <TextField {...params} label="Group" variant="outlined" fullWidth />}
+        />
+        <select className='px-4 py-2 w-full bg-gray-300 rounded-md' 
+            onChange={(e) => setFormData({...formData,kuli:e.target.value})}
+            value={formData.kuli}>
+            <option value="">Kuli</option>
+            <option value="true">true</option>
+            <option value="false">false</option>
+        </select>
         
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">
