@@ -241,6 +241,7 @@ const CreditsPage = () => {
             <th className="border border-black p-2">Customer name</th>
             <th className="border border-black pl-2">Amount</th>
             <th className="border border-black pl-2">Less</th>
+            <th className="border border-black pl-2">Total Amount</th>
             <th className="border border-black pl-2">Created By</th>
             <th className="border border-black pl-2">Created At</th>
             <th className="border border-black p-2"></th>
@@ -259,6 +260,7 @@ const CreditsPage = () => {
                     <td className="border border-black p-2 ">{credit.customerName}</td>
                     <td className="border border-black p-2 text-[#FF0000]">{credit.creditAmount}</td>
                     <td className="border border-black p-2">{credit.less}</td>
+                    <td className="border border-black p-2">{credit.totalAmount}</td>
                     <td className="border border-black p-2">{credit.createdBy}</td>
                     <td className="border border-black p-2">{new Date(credit.createdAt).toLocaleString()}</td>
                     <td className="border border-black p-2">
@@ -277,22 +279,24 @@ const CreditsPage = () => {
             )} 
         </table>
         {isFormOpen && (
-          <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-          <EditCreditForm
-          isEdit={isEdit}
-            onClose={() => setIsFormOpen(false)}
-            onCloseEdit={() => {
-              setSelectedCredit(null)
-              setIsFormOpen(false)
-            }}
-            fetchCredits={fetchCredits}
-            credit={selectedCredit}
-          />
+          <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+            <div onClick={(e) => e.stopPropagation()}>
+              <EditCreditForm
+                isEdit={isEdit}
+                onClose={() => setIsFormOpen(false)}
+                onCloseEdit={() => {
+                  setSelectedCredit(null)
+                  setIsFormOpen(false)
+                }}
+                fetchCredits={fetchCredits}
+                credit={selectedCredit}
+              />
+            </div> 
         </div>
         )}
         {isHistoryData && (
-          <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
-            <div className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
+          <div onClick={() => setIsHistoryData(false)} className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+            <div onClick={(e) => e.stopPropagation()} className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
               <div className='h-full overflow-y-auto p-6'>
                 <CreditsHistory onClose={() => setIsHistoryData(false)}/>
               </div>

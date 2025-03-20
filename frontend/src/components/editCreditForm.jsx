@@ -100,8 +100,8 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
     const formattedData = {
       creditId:selectedCreditId,
       customerName:formData.customerName,
-      creditAmount: formData.creditAmount,
-      less: formData.less,
+      creditAmount: parseInt(formData.creditAmount ? formData.creditAmount: 0),
+      less: parseInt(formData.less ? formData.less :0),
       modifiedBy:user.userName,
     };
       
@@ -176,7 +176,7 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
         value={formData.less}
         onChange={(e) => setFormData({ ...formData, less: e.target.value })}
       />
-      <h2 className='w-full text-lg'>Total Amount: <span className='text-green-500 font-medium'>{formData.creditAmount - formData.less}</span></h2>
+      <h2 className='w-full text-lg'>Total Amount: <span className='text-green-500 font-medium'>{parseInt(formData.creditAmount ? formData.creditAmount : 0) + parseInt(formData.less ? formData.less : 0)}</span></h2>
       <div className="flex flex-row gap-3">
         <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">
             Cancel

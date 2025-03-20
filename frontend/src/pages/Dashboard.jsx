@@ -91,30 +91,37 @@ const Dashboard = () => {
 
       {/* Add Lot Modal */}
       {isNewLot && (
-        <div className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
-          <AddLotForm 
-            onClose={() => setIsNewLot(false)}
-            onCloseEdit={() => setIsNewLot(false)}
-          />
+        <div onClick={() => setIsNewLot(false)} className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
+          <div onClick={(e) => e.stopPropagation()}>
+            <AddLotForm 
+              onClose={() => setIsNewLot(false)}
+              onCloseEdit={() => setIsNewLot(false)}
+            />
+          </div>
         </div>
       )}
 
       {/* Add Sale Modal */}
       {isNewSale && (
-        <div className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
-          <AddSalesForm 
-            onClose={() => setIsNewSale(false)}
-            onCloseEdit={() => setIsNewSale(false)}
-          />
+        <div onClick={() => setIsNewSale(false)} className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
+          <div onClick={(e) => e.stopPropagation()}>
+            <AddSalesForm 
+              onClose={() => setIsNewSale(false)}
+              onCloseEdit={() => setIsNewSale(false)}
+            />
+          </div>
         </div>
       )}
 
       {isNewCredit && (
-        <div className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
-          <EditCreditForm
-            onClose={() => setIsNewCredit(false)}
-            onCloseEdit={() => setIsNewCredit(false)}
-          />
+        <div onClick={() => setIsNewCredit(false)} className='flex w-full min-h-screen inset-0 fixed justify-center items-center bg-black/50'>
+          
+          <div onClick={(e) => e.stopPropagation()}>
+            <EditCreditForm
+              onClose={() => setIsNewCredit(false)}
+              onCloseEdit={() => setIsNewCredit(false)}
+            />
+          </div>
         </div>
       )}
     </section>

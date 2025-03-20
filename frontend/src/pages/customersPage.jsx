@@ -214,19 +214,22 @@ const CustomersPage = () => {
       </table>
       {/* table */}
       {isFormOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-        <AddCustomerForm
-          onClose={() => setIsFormOpen(false)}
-          fetchCustomers={fetchCustomers}
-          customer={selectedCustomer}
-          isEdit={isEdit}
-          onCloseEdit={() => setIsEdit(false)}
-        />
+        <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+          <div onClick={(e) => e.stopPropagation()}>
+            <AddCustomerForm
+              onClose={() => setIsFormOpen(false)}
+              fetchCustomers={fetchCustomers}
+              customer={selectedCustomer}
+              isEdit={isEdit}
+              onCloseEdit={() => setIsEdit(false)}
+            />
+          </div>
+         
       </div>
       )}
       {isHistoryData && (
-          <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
-            <div className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
+          <div onClick={() => setIsHistoryData(false)} className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+            <div onClick={(e) => e.stopPropagation()} className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
               <div className='h-full overflow-y-auto p-6'>
                 <CustomersHistory onClose={() => setIsHistoryData(false)}/>
               </div>

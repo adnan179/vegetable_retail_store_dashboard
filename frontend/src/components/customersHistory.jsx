@@ -53,8 +53,8 @@ const CustomersHistory = ({ onClose }) => {
     }, [filter]);
 
     return (
-        <div className="p-6 bg-white overflow-y-auto w-full h-full">
-            <div className="flex justify-between items-center">
+        <div className="p-3 bg-white overflow-y-auto w-full h-full">
+            <div className="flex sticky top-0 justify-between items-center">
                 <h2 className="text-xl font-bold mb-4">Customers Edit History</h2>
                 <img 
                     src={closeIcon} 

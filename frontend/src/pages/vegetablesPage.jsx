@@ -100,7 +100,7 @@ const VegetablesPage = () => {
           )}
       </table>
       {isFormOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+        <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
           <AddVegetableForm 
             onClose={() => setIsFormOpen(false)}
             fetchVegetables={fetchVegetables}

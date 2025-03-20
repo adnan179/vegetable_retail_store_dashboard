@@ -86,62 +86,6 @@ const SalesReport = () => {
     fetchSales();
   };
 
-  // const generatePDF = () => {
-  //   const doc = new jsPDF();
-  //   doc.setFont("helvetica", "bold");
-    
-  //   // Title
-  //   doc.text("JVK Vegetable Retail Store", 14, 10);
-  //   doc.setFontSize(10);
-  //   doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 10, 20);
-
-  //   let y = 30;
-
-  //   // Group sales by lotName
-  //   const groupedSales = filteredSales.reduce((acc, sale) => {
-  //     acc[sale.lotName] = acc[sale.lotName] || [];
-  //     acc[sale.lotName].push(sale);
-  //     return acc;
-  //   }, {});
-
-  //   Object.entries(groupedSales).forEach(([lotName, sales]) => {
-  //     // Section header for Lot Name
-  //     doc.setFont("helvetica", "bold");
-  //     doc.text(`Lot Name: ${lotName}`, 14, y);
-  //     y += 5;
-
-  //     // Table headers
-  //     const tableColumn = ["Customer Name", "Kgs", "Price/Kg", "Total", "Payment", "Created At"];
-  //     const tableRows = sales.map(sale => [
-  //       sale.customerName,
-  //       sale.numberOfKgs,
-  //       sale.pricePerKg,
-  //       sale.totalAmount,
-  //       sale.paymentType,
-  //       new Date(sale.createdAt).toLocaleString(),
-  //     ]);
-  //     // Manually attach autoTable
-  //     if (typeof jsPDF === "function") {
-  //       jsPDF.autoTable = autoTable;
-  //     }
-  //     console.log("autoTable exists?", typeof doc.autoTable);
-
-  //     // AutoTable for sales data
-  //     doc.autoTable({
-  //       startY: y + 5,
-  //       head: [tableColumn],
-  //       body: tableRows,
-  //       styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
-  //       theme: "plain",
-  //     });
-
-  //     // Move Y position for next section
-  //     y = doc.autoTable.previous.finalY + 10;
-  //   });
-
-  //   doc.save(`sales_report_${new Date().toLocaleDateString()}.pdf`);
-  // };
-
   const styles = StyleSheet.create({
     page: { padding: 20 },
     section: { marginBottom: 10 },

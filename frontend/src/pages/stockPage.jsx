@@ -355,48 +355,51 @@ const StockPage = () => {
           )} 
       </table>
       {isFormOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-        <AddLotForm
-          onClose={() => setIsFormOpen(false)}
-          fetchLots={fetchStocks}
-          stock={selectedStock}
-          isEdit={isEdit}
-          onCloseEdit={() => setIsEdit(false)}
-        />
+        <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+          <div onClick={(e) => e.stopPropagation()}>
+            <AddLotForm
+              onClose={() => setIsFormOpen(false)}
+              fetchLots={fetchStocks}
+              stock={selectedStock}
+              isEdit={isEdit}
+              onCloseEdit={() => setIsEdit(false)}
+            />
+          </div>
       </div>
       )}
       {isEditPaymentStatus && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-          <form onSubmit={handleEditSubmit} className='flex flex-col gap-4 justify-center items-center bg-white p-4 shadow-md rounded-md'>
-              <h2 className={`${editedPaymentStatus === "due" ? "text-red-500":"text-green-500"} text-lg font-medium`}>
-                Payment Status: {editedPaymentStatus}
-              </h2>
-            <InputField 
-              inputRef={inputRef}
-              label="Amount"
-              placeholder="Enter amount"
-              value={editedAmount}
-              onChange={(e) => setEditedAmount(e.target.value)}
-            />
-            <div className='flex flex-row gap-2'>
-              <button type="button" onClick={handleCancelPayment} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">
-                Cancel
-              </button>
-              <button type="submit" className="px-4 py-2 w-[200px] rounded text-white font-medium bg-[#1E90FF]">
-                  {isLoading ? <LoadingSpinner/>:"Submit"}
-              </button>
-            </div>
-          </form>
-          
+        <div onClick={() => setIsEditPaymentStatus(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+          <div onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={handleEditSubmit} className='flex flex-col gap-4 justify-center items-center bg-white p-4 shadow-md rounded-md'>
+                <h2 className={`${editedPaymentStatus === "due" ? "text-red-500":"text-green-500"} text-lg font-medium`}>
+                  Payment Status: {editedPaymentStatus}
+                </h2>
+              <InputField 
+                inputRef={inputRef}
+                label="Amount"
+                placeholder="Enter amount"
+                value={editedAmount}
+                onChange={(e) => setEditedAmount(e.target.value)}
+              />
+              <div className='flex flex-row gap-2'>
+                <button type="button" onClick={handleCancelPayment} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 w-[200px] rounded text-white font-medium bg-[#1E90FF]">
+                    {isLoading ? <LoadingSpinner/>:"Submit"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
       {isHistory && (
-        <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
-        <div className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
-          <div className='h-full overflow-y-auto p-6'>
-            <StockHistory onClose={() => setIsHistory(false)}/>
+        <div onClick={() => setIsHistory(false)} className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+          <div onClick={(e) => e.stopPropagation()} className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
+            <div className='h-full overflow-y-auto p-6'>
+              <StockHistory onClose={() => setIsHistory(false)}/>
+            </div>
           </div>
-        </div>
       </div>
       )}
     </section>

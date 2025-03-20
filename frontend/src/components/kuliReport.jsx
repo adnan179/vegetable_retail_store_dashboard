@@ -43,7 +43,7 @@ const KuliReport = () => {
       const today = new Date().toISOString().split('T')[0];
       const todaySales = response.data.filter(sale => sale.createdAt.startsWith(today));
       setSales(response.data);
-      setFilteredSales(todaySales);
+      setFilteredSales(groupByCustomer(todaySales));
     } catch (error) {
       console.error('Error fetching sales:', error);
       toast.error("Failed to generate kuli report");
@@ -77,25 +77,72 @@ const KuliReport = () => {
         return saleDate >= fromDateTime && saleDate <= toDateTime;
       });
 
-      setFilteredSales(filtered);
+      setFilteredSales(groupByCustomer(filtered));
     }
   }, [sales, fromDate, fromTime, toDate, toTime]);
 
+  const groupByCustomer = (salesData) => {
+    const groupedData = salesData.reduce((acc, sale) => {
+      if (!acc[sale.customerName]) {
+        acc[sale.customerName] = {};
+      }
+      acc[sale.customerName][sale.lotName] = (acc[sale.customerName][sale.lotName] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.keys(groupedData).map(customerName => ({
+      customerName,
+      lots: Object.keys(groupedData[customerName]).map(lotName => ({
+        lotName,
+        numberOfBags: groupedData[customerName][lotName]
+      }))
+    }));
+  };
+
+  //function to generate pdf and download it
   const generatePdf = () => {
     const doc = new jsPDF('p', 'mm', 'a4');
-    doc.text("JVK Vegetable Retail Store",14,10);
-    doc.text(`Report Date: ${new Date().toLocaleDateString()}`,14,20);
-
-    const tableColumn = ["Customer Name", "Lot Name","Date"];
-    const tableRows = filteredSales.map(sale => [
-      sale.customerName,
-      sale.lotName.split('-').slice(0, 3).join('-'),
-      new Date(sale.createdAt).toLocaleDateString()
-    ]);
-
-    autoTable(doc, {startY:30, head:[tableColumn], body:tableRows});
+    doc.text("JVK Vegetable Retail Store", 10, 10);
+    doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 8, 20);
+  
+    let startY = 30;
+  
+    filteredSales.forEach((customer, index) => {
+      if (!customer.lots || customer.lots.length === 0) return; // Skip empty customers
+  
+      // Add Customer Name Header
+      doc.text(`Customer: ${customer.customerName}`, 8, startY);
+      startY += 10;
+  
+      const tableColumn = ["Lot Name", "Number of Bags"];
+      const tableRows = customer.lots.map(lot => [
+        lot.lotName?.split("-").slice(0,3).join("-") || "N/A",
+        lot.numberOfBags || 0
+      ]);
+  
+      // Generate Table
+      autoTable(doc, {
+        startY: startY,
+        head: [tableColumn],
+        body: tableRows,
+        margin: { top: 10 },
+      });
+  
+      startY = doc.lastAutoTable.finalY + 10;
+  
+      // Add a new page if space is running out
+      if (startY > 260 && index !== filteredSales.length - 1) {
+        doc.addPage();
+        startY = 20;
+      }
+    });
+  
     doc.save(`kuli_sales_report_${new Date().toLocaleDateString()}.pdf`);
   };
+  
+  
+  
+  
 
   return (
     <div className='mt-5'>
@@ -137,24 +184,29 @@ const KuliReport = () => {
         {isLoading ? (
           <LoadingSpinner />
         ) : filteredSales.length > 0 ? (
-          <table className='w-full border-collapse border border-gray-300'>
-            <thead>
-              <tr className='bg-gray-200'>
-                <th className='border border-gray-300 p-2'>Customer Name</th>
-                <th className='border border-gray-300 p-2'>Lot Name</th>
-                <th className='border border-gray-300 p-2'>Created At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSales.map((sale, idx) => (
-                <tr key={idx} className='border border-gray-300'>
-                  <td className='border border-gray-300 p-2'>{sale.customerName}</td>
-                  <td className='border border-gray-300 p-2'>{sale.lotName?.split("-").slice(0, 3).join("-")}</td>
-                  <td className='border border-gray-300 p-2'>{new Date(sale.createdAt).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className='flex flex-wrap gap-4'>
+            {filteredSales.map((customer, idx) => (
+              <div key={idx} className='w-full bg-white p-4 rounded-lg shadow-md'>
+                <h2 className='text-lg font-bold mb-2'>{customer.customerName}</h2>
+                <table className='w-full border-collapse border border-gray-300'>
+                  <thead>
+                    <tr className='bg-gray-200'>
+                      <th className='border border-gray-300 p-2'>Lot Name</th>
+                      <th className='border border-gray-300 p-2'>Number of Bags</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customer.lots.map((lot, idx) => (
+                      <tr key={idx} className='border border-gray-300'>
+                        <td className='border border-gray-300 p-2'>{lot.lotName}</td>
+                        <td className='border border-gray-300 p-2'>{lot.numberOfBags}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
         ) : (
           <p className='text-red-500 font-medium text-xl'>No sales found for the selected range.</p>
         )}

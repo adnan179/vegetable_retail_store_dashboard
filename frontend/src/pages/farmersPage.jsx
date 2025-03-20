@@ -180,14 +180,14 @@ const FarmersPage = () => {
             )} 
         </table>
         {isFormOpen && (
-          <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-          <AddFarmerForm
-            onClose={() => setIsFormOpen(false)}
-            fetchFarmers={fetchFarmers}
-            farmer={selectedFarmer}
-            isEdit={isEdit}
-            onCloseEdit={() => setIsEdit(false)}
-          />
+          <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+            <AddFarmerForm
+              onClose={() => setIsFormOpen(false)}
+              fetchFarmers={fetchFarmers}
+              farmer={selectedFarmer}
+              isEdit={isEdit}
+              onCloseEdit={() => setIsEdit(false)}
+            />
         </div>
         )}
     </section>

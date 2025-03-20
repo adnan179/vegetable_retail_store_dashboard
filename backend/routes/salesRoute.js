@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+require("dotenv").config();
+const axios = require('axios');
 
 const Sales = require("../models/salesSchema");
 const Stock = require("../models/stockSchema");
@@ -9,6 +11,86 @@ const DeletedSales = require('../models/deletedSalesSchema');
 const salesHistorySchema = require('../models/salesHistorySchema');
 
 const router = express.Router();
+const WHATSAPP_API_URL = "https://graph.facebook.com/v19.0";
+const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+
+const formatSalesMessage = (customerName, sales) => {
+  let message = `Hello ${customerName}, here is your bill \n\n`;
+  let totalAmount = 0;
+
+  sales.forEach((sale,idx) => {
+    const itemTotal = sale.totalAmount;
+    totalAmount += itemTotal;
+    message += `${idx +1}. Lot: ${sale.lotName}, kgs: ${sale.numberOfKgs}, price per Kg: ${sale.pricePerKg}, Total: ${itemTotal} \n\n`;
+
+  });
+  message += `Total Amount: ${totalAmount}`;
+  console.log("Message being sent:", message);
+  return message;
+
+};
+
+router.post("/send-whatsapp-messages", async (req, res) => {
+  try {
+    const salesData = req.body.sales; // Sales data sent from the frontend
+
+    if (!salesData || salesData.length === 0) {
+      return res.status(400).json({ message: "No sales data provided" });
+    }
+
+    // Group sales by customer
+    const salesByCustomer = salesData.reduce((acc, sale) => {
+      acc[sale.customerName] = acc[sale.customerName] || [];
+      acc[sale.customerName].push(sale);
+      return acc;
+    }, {});
+
+    const messagesSent = [];
+
+    // Loop through customers and send messages
+    for (const [customerName, customerSales] of Object.entries(salesByCustomer)) {
+      // Fetch customer phone number from database
+      const customer = await Customer.findOne({ customerName });
+
+      if (!customer || !customer.phoneNumber) {
+        console.log(`No phone number found for ${customerName}`);
+        continue;
+      }
+
+      const phoneNumber = `+91${customer.phoneNumber}`;
+      const message = formatSalesMessage(customerName, customerSales);
+
+      // Send WhatsApp message
+      const response = await axios.post(
+        `${WHATSAPP_API_URL}/${WHATSAPP_PHONE_NUMBER_ID}/messages`,
+        {
+          messaging_product: "whatsapp",
+          to: phoneNumber,
+          type: "text",
+          text: { body: message },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      messagesSent.push({
+        customerName,
+        phoneNumber,
+        status: response.data,
+      });
+    }
+
+    res.status(200).json({ message: "Messages sent successfully", data: messagesSent });
+  } catch (error) {
+    console.error("Error sending WhatsApp messages:", error.response?.data || error.message);
+    res.status(500).json({ message: "Error sending messages", error: error.response?.data || error.message });
+  }
+});
 router.post("/", async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -189,5 +271,6 @@ router.get("/kuli", async (req, res) => {
       res.status(500).json({ error: "Error fetching sales" });
   }
 });
+
 
 module.exports = router;

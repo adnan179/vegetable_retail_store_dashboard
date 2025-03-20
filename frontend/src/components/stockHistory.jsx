@@ -51,8 +51,8 @@ const StockHistory = ({ onClose }) => {
     }, [filter]);
 
     return (
-        <div className="p-6 bg-white overflow-y-auto w-full h-full">
-            <div className="flex justify-between items-center">
+        <div className="relative p-6 bg-white overflow-y-auto w-full h-full">
+            <div className="flex justify-between items-center sticky top-0">
                 <h2 className="text-2xl font-bold mb-4">Stock Edit History</h2>
                 <img 
                     src={closeIcon} 
@@ -86,7 +86,7 @@ const StockHistory = ({ onClose }) => {
                         delete allFields.createdBy;
                         return (
                             <div key={index} className="p-4 border rounded-lg shadow-md bg-gray-50">
-                                <h2 className="text-[16px]">Lot Name: <span className="text-blue-500 font-medium">{record.lotName}</span></h2>
+                                <h2 className="text-[16px]">Lot Name: <span className="text-blue-500 font-medium">{record.lotName?.split("-").slice(0,3).join("-")}</span></h2>
                                 <div className="flex flex-row justify-between items-center text-[16px]">
                                     <h3 className="text-gray-500">Modified By: <span className="text-blue-500 font-medium">{record.modifiedBy}</span></h3>
                                     <h3 className="text-gray-500">Modified At: {new Date(record.modifiedAt).toLocaleString()}</h3>
@@ -100,17 +100,23 @@ const StockHistory = ({ onClose }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.keys(allFields).map((key) => (
-                                            <tr key={key} className="hover:bg-gray-50">
-                                                <td className="border border-gray-300 px-4 py-2 font-semibold">{key}</td>
-                                                <td className="border border-gray-300 px-4 py-2 text-gray-500">
-                                                    {typeof record.previousData[key] === "object" ? JSON.stringify(record.previousData[key]) : record.previousData[key] || "N/A"}
-                                                </td>
-                                                <td className={`border border-gray-300 px-4 py-2 ${record.previousData[key] !== record.newData[key] ? "text-red-600" : "text-gray-500"}`}>
-                                                    {typeof record.newData[key] === "object" ? JSON.stringify(record.newData[key]) : record.newData[key] || "N/A"}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {Object.keys(allFields).map((key) => {
+                                            let previousValue = record.previousData[key] || "N/A";
+                                            let newValue = record.newData[key] || "N/A";
+                                            if (key === "lotName" && typeof newValue === "string") {
+                                                newValue = newValue.split("-").slice(0, 3).join("-");
+                                            }
+                                            if (key === "lotName" && typeof previousValue === "string") {
+                                                previousValue = previousValue.split("-").slice(0, 3).join("-");
+                                            }
+                                            return (
+                                                <tr key={key} className="hover:bg-gray-50">
+                                                    <td className="border border-gray-300 px-4 py-2 font-semibold">{key}</td>
+                                                    <td className="border border-gray-300 px-4 py-2 text-gray-500">{previousValue}</td>
+                                                    <td className={`border border-gray-300 px-4 py-2 ${newValue === "N/A" ? "text-gray-500" : (previousValue !== newValue ? "text-red-600" : "text-gray-500")}`}>{newValue}</td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

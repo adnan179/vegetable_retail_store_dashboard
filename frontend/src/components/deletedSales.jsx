@@ -23,7 +23,7 @@ const DeletedSales = ({onClose}) => {
 
   return (
     <div className='flex flex-col bg-white p-5 rounded-lg gap-3'>
-        <div className='flex flex-row justify-between items-center'>
+        <div className='flex fixed top-2 flex-row justify-between items-center'>
             <h2 className='text-black font-semibold text-lg'>Deleted Sales</h2>
             <img 
                 src={closeIcon} 

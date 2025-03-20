@@ -82,26 +82,18 @@ const WhatsAppMessage = () => {
     }
   }, [sales, fromDate, fromTime, toDate, toTime]);
   
-  const sendWhatsAppBill = (customerName, sales) => {
-    let message = `Hello ${customerName}, here is your bill:\n\n`;
-    let totalAmount = 0;
-
-    sales.forEach((sale, idx) => {
-      const itemTotal = sale.numberOfKgs * sale.pricePerKg;
-      totalAmount += itemTotal;
-      message += `${idx + 1}. Lot: ${sale.lotName}\n   Kgs: ${sale.numberOfKgs}\n   Price/Kg: ${sale.pricePerKg}\n   Total: ${itemTotal}\n\n`;
-    });
-
-    message += `Total Amount: ${totalAmount}`;
-
-    const encodedMessage = encodeURIComponent(message);
-    const phoneNumber = sales[0]?.customerPhone || "";
-    if (phoneNumber) {
-      window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
-    } else {
-      toast.error("Phone number not available for this customer.");
+  //function to send whatsapp messages
+  const sendWhatsAppMessages = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${backendURL}/sales/send-whatsapp-messages`, {sales: filteredSales,});
+      if(response.status === 200) toast.success("Messages sent successfully!");
+    } catch (error) {
+      toast.error("Failed to send messages: " + error.response?.data?.message || error.message);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  };  
 
   const handleRemoveFilters = () => {
     setFromDate("");
@@ -139,11 +131,14 @@ const WhatsAppMessage = () => {
             {generateTimeSlots()?.map((slot, idx) => <option key={idx} value={slot}>{slot}</option>)}
           </select>
         </div>
-        <button className='px-4 py-2 rounded-md bg-red-500 text-white   font-medium shadow-md'
+        <button className='px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-md'
           onClick={handleRemoveFilters}>
           Remove Filters
         </button>
-        
+        <button onClick={sendWhatsAppMessages}
+          className='px-4 py-2 rounded-md bg-green-500 text-white font-medium shadow-md'>
+          Send WhatsApp Bills
+        </button>
       </div>
       {/* Filters */}
       <div className='w-full h-full bg-white p-3 rounded-lg'>
@@ -173,12 +168,6 @@ const WhatsAppMessage = () => {
                   ))}
                 </tbody>
               </table>
-              <button
-                className='mt-3 px-4 py-2 bg-green-500 text-white rounded-md'
-                onClick={() => sendWhatsAppBill(customerName, sales)}
-              >
-                Send WhatsApp Bill
-              </button>
             </div>
           ))
         ) : (

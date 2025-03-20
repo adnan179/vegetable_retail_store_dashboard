@@ -125,7 +125,7 @@ const SaleCards = ({ fromDate, fromTime, toDate, toTime }) => {
                     ))}
                   </tbody>
                 </table>
-                <p className="text-white font-medium text-lg">Total amount: {amount}</p>
+                <p className="text-white font-medium text-lg flex w-full justify-end">Total amount: {amount}</p>
               </div>
             );
           })

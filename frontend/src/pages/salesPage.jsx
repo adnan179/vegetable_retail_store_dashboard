@@ -287,6 +287,7 @@ const SalesPage = () => {
               <th className="border border-black pl-2">Payment Type</th>
               <th className="border border-black pl-2">Amount</th>
               <th className="border border-black pl-2">Created By</th>
+              <th className="border border-black pl-2">Created At</th>
               <th className="border border-black p-2"></th>
               <th className="border border-black p-2"></th>
             </tr>
@@ -307,6 +308,7 @@ const SalesPage = () => {
                     <td className={`${sale.paymentType.split('-')[0] === "credit"? "bg-red-500":"bg-green-500"} border border-black p-2`}>{sale.paymentType.split('-')[0]}</td>
                     <td className={`${sale.paymentType.split('-')[0] === "credit" ? "text-red-500":"text-green-500"} border border-black p-2 font-medium`}>{sale.totalAmount}</td>
                     <td className="border border-black p-2">{sale.createdBy}</td>
+                    <td className="border border-black p-2">{new Date(sale.createdAt).toLocaleString()}</td>
                     <td className="border border-black p-2">
                       <button onClick={() => handleEdit(sale)} className="bg-gray-200 text-[#1E90FF] font-bold cursor-pointer px-4 py-2 rounded">
                         Edit
@@ -323,7 +325,7 @@ const SalesPage = () => {
             )} 
         </table>
         {isFormOpen && (
-          <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+          <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
           <AddSalesForm
             onClose={() => setIsFormOpen(false)}
             fetchSales={fetchSales}
@@ -334,13 +336,13 @@ const SalesPage = () => {
         </div>
         )}
         {isDeletedData && (
-          <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+          <div onClick={() => setIsDeletedData(false)} className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
             <DeletedSales onClose={() => setIsDeletedData(false)}/>
           </div>
         )}
         {isHistoryData && (
-          <div className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
-            <div className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
+          <div onClick={() => setIsHistoryData(false)} className='fixed inset-0 flex justify-center items-center bg-black/50 z-50'>
+            <div onClick={(e) => e.stopPropagation()} className='w-3/4 max-w-2xl h-3/4 bg-white rounded-lg shadow-lg overflow-hidden'>
               <div className='h-full overflow-y-auto p-6'>
                 <SalesHistory onClose={() => setIsHistoryData(false)}/>
               </div>

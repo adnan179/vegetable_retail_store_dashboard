@@ -19,7 +19,6 @@ const SalesHistory = ({ onClose }) => {
             .catch((err) => console.error("Error fetching history:", err));
     }, []);
 
-
     //function to filter data 
     const filterData = (data, filterOption) => {
         const now = new Date();
@@ -56,8 +55,8 @@ const SalesHistory = ({ onClose }) => {
     }, [filter]);
 
     return (
-        <div className="p-6 bg-white overflow-y-auto w-full h-full">
-            <div className="flex justify-between items-center">
+        <div className="p-3 bg-white overflow-y-auto w-full h-full">
+            <div className="flex sticky top-0 justify-between items-center">
                 <h2 className="text-2xl font-bold mb-4">Sales Edit History</h2>
                 <img 
                     src={closeIcon} 
@@ -109,17 +108,23 @@ const SalesHistory = ({ onClose }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.keys(allFields).map((key) => (
-                                            <tr key={key} className="hover:bg-gray-50">
-                                                <td className="border border-gray-300 px-4 py-2 font-semibold">{key}</td>
-                                                <td className="border border-gray-300 px-4 py-2 text-gray-500">
-                                                    {typeof record.previousData[key] === "object" ? JSON.stringify(record.previousData[key]) : record.previousData[key] || "N/A"}
-                                                </td>
-                                                <td className={`border border-gray-300 px-4 py-2 ${record.previousData[key] !== record.newData[key] ? "text-red-600" : "text-gray-500"}`}>
-                                                    {typeof record.newData[key] === "object" ? JSON.stringify(record.newData[key]) : record.newData[key] || "N/A"}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {Object.keys(allFields).map((key) => {
+                                            let previousValue = record.previousData[key] || "N/A";
+                                            let newValue = record.newData[key] || "N/A";
+                                            if (key === "lotName" && typeof newValue === "string") {
+                                                newValue = newValue.split("-").slice(0, 3).join("-");
+                                            }
+                                            if (key === "lotName" && typeof previousValue === "string") {
+                                                previousValue = previousValue.split("-").slice(0, 3).join("-");
+                                            }
+                                            return (
+                                                <tr key={key} className="hover:bg-gray-50">
+                                                    <td className="border border-gray-300 px-4 py-2 font-semibold">{key}</td>
+                                                    <td className="border border-gray-300 px-4 py-2 text-gray-500">{previousValue}</td>
+                                                    <td className={`border border-gray-300 px-4 py-2 ${newValue === "N/A" ? "text-gray-500" : (previousValue !== newValue ? "text-red-600" : "text-gray-500")}`}>{newValue}</td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

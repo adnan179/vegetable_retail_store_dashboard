@@ -56,6 +56,8 @@ const CreditCards = ({fromDate,fromTime,toDate,toTime}) => {
             const today = new Date().toISOString().split("T")[0];
             data = data.filter((sale) => sale.createdAt.startsWith(today));
           }
+          // Sort data by createdAt (newest first)
+          data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           setCredits(data);
           setFilteredCredits(data);
       }
@@ -76,10 +78,10 @@ const CreditCards = ({fromDate,fromTime,toDate,toTime}) => {
         fetchCredits();
       };
     
-      socket.on("newCredit", handleNewCredit);
+      socket.on("newCredit", handleNewCredit());
     
       return () => {
-        socket.off("newCredit", handleNewCredit);
+        socket.off("newCredit", handleNewCredit());
       };
     }, []);
   
@@ -91,8 +93,10 @@ const CreditCards = ({fromDate,fromTime,toDate,toTime}) => {
         <table className="w-full mt-5 border-separate border border-black rounded-lg">
           <thead>
             <tr className="text-left text-[16px] text-black">
-            <th className="border border-black p-2">Customer name</th>
-            <th className="border border-black pl-2">Amount</th>
+              <th className="border border-black p-2">Customer name</th>
+              <th className="border border-black pl-2">Amount</th>
+              <th className="border border-black pl-2">Less</th>
+              <th className="border border-black pl-2">Total Amount</th>
             </tr>
           </thead>
           {isLoading ? (
@@ -106,6 +110,8 @@ const CreditCards = ({fromDate,fromTime,toDate,toTime}) => {
                   <tr key={credit._id} className="text-left">
                     <td className="border border-black p-2 ">{credit.customerName}</td>
                     <td className="border border-black p-2 text-[#FF0000]">{credit.creditAmount}</td>
+                    <td className="border border-black p-2 text-[#FF0000]">{credit.less}</td>
+                    <td className="border border-black p-2 text-[#FF0000]">{credit.totalAmount}</td>
                   </tr>
                 ))}
               </tbody>

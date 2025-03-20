@@ -85,11 +85,11 @@ const GroupPage = () => {
             )}  
         </table>
         {isFormOpen && (
-          <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-          <AddGroupForm
-            onClose={() => setIsFormOpen(false)}
-            fetchGroups={fetchGroups}
-          />
+          <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+            <AddGroupForm
+                onClose={() => setIsFormOpen(false)}
+                fetchGroups={fetchGroups}
+            />
         </div>
         )}
     </section>

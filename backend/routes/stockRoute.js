@@ -41,17 +41,32 @@ router.get("/history", async (req,res) => {
     res.status(500).json({error:err.message});
   }
 });
-router.get("/:lotName", async(req,res) => {
-  try{
-    const stock = await Stock.findOne({lotName:req.params.lotName});
-    if(!stock) return res.status(404).json({message:"Stock not found"});
-    res.status(200).json(stock);
-  }catch(err){
-    res.status(500).json({error:err.message});
+
+router.put("/:lotName", async (req, res) => {
+  try {
+      const existingStock = await Stock.findOne({ lotName: req.params.lotName });
+      if (!existingStock) {
+          return res.status(404).json({ message: "Stock not found" });
+      }
+
+      // If numberOfBags is being updated, adjust remainingBags accordingly
+      if (req.body.numberOfBags !== undefined) {
+          const diff = req.body.numberOfBags - existingStock.numberOfBags;
+          req.body.remainingBags = existingStock.remainingBags + diff;
+      }
+
+      const updatedStock = await Stock.findOneAndUpdate(
+          { lotName: req.params.lotName },
+          req.body,
+          { new: true }
+      );
+
+      res.status(200).json({ message: "Stock updated successfully", stock: updatedStock });
+  } catch (err) {
+      res.status(400).json({ error: err.message });
+      console.log("Failed to update stock: " + err.message);
   }
 });
-
-
 
 router.put("/:lotName", async (req, res) => {
   try {
