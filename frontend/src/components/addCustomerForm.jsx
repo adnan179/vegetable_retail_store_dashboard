@@ -165,9 +165,18 @@ const AddCustomerForm = ({onClose, fetchCustomers, customer, isEdit, onCloseEdit
             onChange={(event, newValue) => {
             setFormData({ ...formData, groupName: newValue || '' });
             }}
-            renderInput={(params) => <TextField {...params} label="Group" variant="outlined" fullWidth />}
+            renderInput={(params) => 
+                <TextField 
+                    {...params} 
+                    label="Group" 
+                    variant="outlined" 
+                    fullWidth 
+                    required
+                    error={!formData.groupName} // Shows error if empty
+                    helperText={!formData.groupName ? "Group name is required" : ""}
+                />}
         />
-        <select className='px-4 py-2 w-full bg-gray-300 rounded-md' 
+        <select required className='px-4 py-2 w-full bg-gray-300 rounded-md' 
             onChange={(e) => setFormData({...formData,kuli:e.target.value})}
             value={formData.kuli}>
             <option value="">Kuli</option>

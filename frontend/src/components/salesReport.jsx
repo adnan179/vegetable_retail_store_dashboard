@@ -9,7 +9,7 @@ import { saveAs } from 'file-saver';
 const SalesReport = () => {
   const { backendURL } = useAuth();
   const [sales, setSales] = useState([]);
-  const [filteredSales, setFilteredSales] = useState([]);
+  const [filteredSales, setFilteredSales] = useState({});
   const [fromDate, setFromDate] = useState("");
   const [fromTime, setFromTime] = useState("");
   const [toDate, setToDate] = useState("");
@@ -40,13 +40,25 @@ const SalesReport = () => {
       const response = await axios.get(`${backendURL}/sales`);
       const data = response.data;
       setSales(data);
-      setFilteredSales(data);
+      setFilteredSales(groupSalesByLot(data));
     } catch (error) {
       toast.error("Failed to fetch sales data", error.message);
       console.error("Failed to fetch sales data", error.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const groupSalesByLot = (sales) => {
+    return sales.reduce((acc, sale) => {
+      if (!acc[sale.lotName]) {
+        acc[sale.lotName] = { sales: [], totalKgs: 0, totalAmount: 0 };
+      }
+      acc[sale.lotName].sales.push(sale);
+      acc[sale.lotName].totalKgs += parseFloat(sale.numberOfKgs) || 0;
+      acc[sale.lotName].totalAmount += parseFloat(sale.totalAmount) || 0;
+      return acc;
+    }, {});
   };
 
   //function to convert am/pm to 24hr format for filtering
@@ -74,7 +86,7 @@ const SalesReport = () => {
         return saleDate >= fromDateTime && saleDate <= toDateTime;
       });
 
-      setFilteredSales(filtered);
+      setFilteredSales(groupSalesByLot(filtered));
     }
   }, [sales, fromDate, fromTime, toDate, toTime]);
 
@@ -96,45 +108,50 @@ const SalesReport = () => {
     cell: { flex: 1, fontSize: 10, padding: 2 }
   });
 
-  const SalesReportPDF = ({ sales }) => (
-    <Document>
+  const SalesReportPDF = ({ sales }) => {
+    const groupedSales = groupSalesByLot(sales);
+    return(
+      <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>JVK Vegetable Retail Store</Text>
         <Text style={styles.reportDate}>Report Date: {new Date().toLocaleDateString()}</Text>
-        {Object.entries(sales.reduce((acc, sale) => {
-          acc[sale.lotName] = acc[sale.lotName] || [];
-          acc[sale.lotName].push(sale);
-          return acc;
-        }, {})).map(([lotName, sales]) => (
-          <View key={lotName} style={styles.section}>
-            <Text style={styles.title}>Lot Name: {lotName?.split("-").slice(0,3).join("-")}</Text>
-            <View style={styles.tableHeader}>
-              <Text style={styles.cell}>Customer</Text>
-              <Text style={styles.cell}>Kgs</Text>
-              <Text style={styles.cell}>Price/Kg</Text>
-              <Text style={styles.cell}>Total</Text>
-              <Text style={styles.cell}>Payment</Text>
-              <Text style={styles.cell}>Date</Text>
-            </View>
-            {sales.map((sale, idx) => (
-              <View key={idx} style={styles.tableRow}>
-                <Text style={styles.cell}>{sale.customerName}</Text>
-                <Text style={styles.cell}>{sale.numberOfKgs}</Text>
-                <Text style={styles.cell}>{sale.pricePerKg}</Text>
-                <Text style={styles.cell}>{sale.totalAmount}</Text>
-                <Text style={styles.cell}>{sale.paymentType}</Text>
-                <Text style={styles.cell}>{new Date(sale.createdAt).toLocaleString()}</Text>
+        {Object.entries(groupedSales).map(([lotName, { sales, totalKgs, totalAmount }]) => (
+            <View key={lotName} style={styles.section}>
+              <Text style={styles.title}>Lot Name: {lotName?.split("-").slice(0,3).join("-")}</Text>
+              <View style={styles.tableHeader}>
+                <Text style={styles.cell}>Customer</Text>
+                <Text style={styles.cell}>Kgs</Text>
+                <Text style={styles.cell}>Price/Kg</Text>
+                <Text style={styles.cell}>Total</Text>
+                <Text style={styles.cell}>Payment</Text>
+                <Text style={styles.cell}>Date</Text>
               </View>
-            ))}
-          </View>
-        ))}
+              {sales.map((sale, idx) => (
+                <View key={idx} style={styles.tableRow}>
+                  <Text style={styles.cell}>{sale.customerName}</Text>
+                  <Text style={styles.cell}>{sale.numberOfKgs}</Text>
+                  <Text style={styles.cell}>{sale.pricePerKg}</Text>
+                  <Text style={styles.cell}>{sale.totalAmount}</Text>
+                  <Text style={styles.cell}>{sale.paymentType}</Text>
+                  <Text style={styles.cell}>{new Date(sale.createdAt).toLocaleString()}</Text>
+                </View>
+              ))}
+              <Text style={styles.title}>Total Kgs: {totalKgs.toFixed(2)}</Text>
+              <Text style={styles.title}>Total Amount: {totalAmount.toFixed(2)}</Text>
+            </View>
+          ))}
       </Page>
     </Document>
-  );
+    )
+  };
+
+  //function to handle download pdf
   const handleDownloadPDF = async () => {
-    const blob = await pdf(<SalesReportPDF sales={filteredSales} />).toBlob();
+    const salesArray = Object.entries(filteredSales).flatMap(([lotName, { sales }]) => sales);
+    const blob = await pdf(<SalesReportPDF sales={salesArray} />).toBlob();
     saveAs(blob, `sales_report_${new Date().toLocaleDateString()}.pdf`);
   };
+  
 
   return (
     <div className='mt-5'>
@@ -169,7 +186,7 @@ const SalesReport = () => {
           Remove Filters
         </button>
         <button className='px-4 py-2 rounded-md bg-green-500 text-white   font-medium shadow-md'
-          onClick={handleDownloadPDF}>
+          onClick={() => handleDownloadPDF()}>
           Download PDF
         </button>
       </div>
@@ -177,14 +194,10 @@ const SalesReport = () => {
       <div className='w-full h-full bg-white p-3 rounded-lg'>
         {isLoading ? (
           <LoadingSpinner />
-        ) : filteredSales.length > 0 ? (
-          Object.entries(filteredSales.reduce((acc, sale) => {
-            acc[sale.lotName] = acc[sale.lotName] || [];
-            acc[sale.lotName].push(sale);
-            return acc;
-          }, {}))?.map(([lotName, sales]) => (
+        ) : Object.keys(filteredSales).length > 0 ? (
+          Object.entries(filteredSales)?.map(([lotName, {sales, totalKgs, totalAmount}]) => (
             <div key={lotName} className='border p-4 mb-4'>
-              <h2 className='text-lg font-bold'>{lotName}</h2>
+              <h2 className='text-lg font-bold'>{lotName?.split("-").slice(0,3).join("-")}</h2>
               <table className='w-full border-collapse border border-gray-300 mt-2'>
                 <thead>
                   <tr className='bg-gray-200'>
@@ -209,6 +222,8 @@ const SalesReport = () => {
                   ))}
                 </tbody>
               </table>
+              <p className='font-semibold'>Total Kgs: {totalKgs.toFixed(2)}</p>
+              <p className='font-semibold'>Total Amount: {totalAmount.toFixed(2)}</p>
             </div>
           ))
         ) : (

@@ -15,7 +15,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
         lotName: isEdit? stock?.lotName :"",
         farmerName:isEdit ? stock?.farmerName :"",
         vegetableName:isEdit ? stock?.vegetableName :"",
-        numberOfBags:isEdit ? stock?.numberOfBags :0,
+        numberOfBags:isEdit ? stock?.numberOfBags :"",
         paymentStatus : isEdit ? stock?.paymentStatus:"due",
         amount: isEdit ? stock?.amount : 0,
     });
@@ -173,7 +173,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
             <h1 className='text-[16px] font-medium text-black'>{formData.lotName.split('-').slice(0, 3).join('-')}</h1>
         )}
         {/* Input Fields */}
-        <Autocomplete
+        <Autocomplete required
             className="bg-gray-300 rounded-md border-none focus:outline-none w-full"
             options={farmers && farmers.map(farmer => farmer.farmerName)}
             value={formData.farmerName}
@@ -186,6 +186,9 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
                     label="Farmer Name"
                     variant="outlined"
                     fullWidth
+                    required
+                    error={!formData.farmerName} // Shows error if empty
+                    helperText={!formData.farmerName ? "Farmer name is required" : ""}
                 />
             )}
         />
@@ -202,6 +205,9 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
                     label="Vegetable Name"
                     variant="outlined"
                     fullWidth
+                    required
+                    error={!formData.vegetableName} // Shows error if empty
+                    helperText={!formData.vegetableName ? "Vegetable name is required" : ""}
                 />
             )}
         />
@@ -214,7 +220,7 @@ const AddLotForm = ({onClose, fetchLots, stock, isEdit, onCloseEdit}) => {
         {!isEdit && (
             <div className='w-full'>
                 <label className='text-gray-400 text-sm'>Payment Status</label>
-                <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentStatus}
+                <select required className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentStatus}
                     onChange={(e) => setFormData({...formData, paymentStatus:e.target.value})}>
                     <option value="">Payment Status</option>
                     <option value="due">Due</option>

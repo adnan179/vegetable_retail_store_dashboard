@@ -111,7 +111,8 @@ router.post("/", async (req, res) => {
     if(paymentType === 'credit'){
       const customer = await Customer.findOne({ customerName }).session(session);
       if (!customer) {
-        throw new Error("Customer not found");
+        console.log("customer not found")
+        return res.status(404).json("Customer not found");
       }
       customer.balance += totalAmount;
       await customer.save({ session });
@@ -149,10 +150,9 @@ router.post("/", async (req, res) => {
     res.status(201).json({ message: "Sale added successfully", sale: newSale });
   } catch (err) {
     // Rollback changes if any error occurs
+    console.log("Transaction failed:", err.message);
     await session.abortTransaction();
     session.endSession();
-
-    console.error("Transaction failed:", err.message);
     res.status(400).json({ error: err.message });
   }
 });

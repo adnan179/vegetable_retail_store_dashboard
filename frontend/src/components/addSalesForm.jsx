@@ -106,7 +106,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             numberOfKgs:"",
             pricePerKg:"",
             paymentType:"",
-            totalAmount:0
+            totalAmount:""
         });
         localStorage.removeItem("salesFormData");
     };
@@ -127,7 +127,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         const prevFormData = {
             customerName:formData.customerName,
             lotName: formData.lotName,
-            numberOfKgs: 0,
+            numberOfKgs: formData.numberOfKgs,
             pricePerKg: formData.pricePerKg,
             paymentType : formData.paymentType,
             totalAmount:0,
@@ -202,7 +202,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             <h1 className='text-[16px] font-medium text-black'>{sale.salesId}</h1>
         )}
         {/* Input Fields */}
-        <select className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentType}
+        <select required className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentType}
             onChange={(e) => setFormData({...formData, paymentType:e.target.value})}>
             <option value="">Payment Type</option>
             <option value="cash">cash</option>
@@ -229,6 +229,9 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                     label="Customer Name"
                     variant="outlined"
                     fullWidth
+                    required
+                    error={!formData.customerName} // Shows error if empty
+                    helperText={!formData.customerName ? "Customer name is required" : ""}
                     />
                 )}
             />
@@ -245,11 +248,14 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                     label="Lot Name"
                     variant="outlined"
                     fullWidth
+                    required
+                    error={!formData.lotName} // Shows error if empty
+                    helperText={!formData.lotName ? "Lot name is required" : ""}
                 />
             )}
         />
 
-        <InputField
+        <InputField 
             label="Number of Kgs"
             placeholder="Enter no.of Kgs"
             value={formData.numberOfKgs}
