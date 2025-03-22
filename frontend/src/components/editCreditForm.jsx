@@ -155,6 +155,8 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
             label="Customer Name"
             variant="outlined"
             fullWidth
+            required
+            helperText={!formData.customerName ? "Customer name is required" : ""}
           />
         )}
       />

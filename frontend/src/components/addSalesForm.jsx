@@ -127,7 +127,7 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         const prevFormData = {
             customerName:formData.customerName,
             lotName: formData.lotName,
-            numberOfKgs: formData.numberOfKgs,
+            numberOfKgs: '',
             pricePerKg: formData.pricePerKg,
             paymentType : formData.paymentType,
             totalAmount:0,
@@ -203,7 +203,9 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         )}
         {/* Input Fields */}
         <select required className='w-full p-2 bg-[#d9d9d9] rounded-md' value={formData.paymentType}
-            onChange={(e) => setFormData({...formData, paymentType:e.target.value})}>
+            onChange={(e) => {
+                setFormData({...formData, paymentType:e.target.value, customerName:""});
+            }}>
             <option value="">Payment Type</option>
             <option value="cash">cash</option>
             <option value={sale?.paymentType.includes("credit") ? sale.paymentType : "credit"}>{sale?.paymentType.includes("credit") ? sale.paymentType : "credit"}</option>
@@ -230,7 +232,6 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                     variant="outlined"
                     fullWidth
                     required
-                    error={!formData.customerName} // Shows error if empty
                     helperText={!formData.customerName ? "Customer name is required" : ""}
                     />
                 )}
@@ -249,7 +250,6 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
                     variant="outlined"
                     fullWidth
                     required
-                    error={!formData.lotName} // Shows error if empty
                     helperText={!formData.lotName ? "Lot name is required" : ""}
                 />
             )}

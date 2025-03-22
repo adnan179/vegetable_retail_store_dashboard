@@ -25,10 +25,16 @@ router.post("/", async (req,res) => {
 
 router.get("/", async(req,res) => {
   try{
-    const stocks = await Stock.find({ numberOfBags: { $gt: 0 } }).sort({createdAt:-1});
+    const stocks = await Stock.find({ remainingBags: { $gt: 0 } }).sort({createdAt:-1});
+    
+    if (stocks.length === 0) {
+      return res.status(404).json({ message: "No stocks found with remaining bags" });
+    }
+    
     res.status(200).json(stocks);
   }catch(err){
-    res.status(500).json({error:err.message});
+    console.error("Error fetching stocks:", err);
+    res.status(500).json({error: "Internal server error"});
   }
 });
 

@@ -8,7 +8,7 @@ const creditHistorySchema = require("../models/creditHistorySchema");
 router.post("/", async(req,res) => {
     try{
         const { creditId,customerName, creditAmount,less, createdBy } = req.body;
-        const totalAmount = creditAmount + less;
+        const totalAmount = parseInt(creditAmount) + parseInt(less);
         const newCredit = new Credits({
             creditId,
             customerName,
@@ -22,7 +22,7 @@ router.post("/", async(req,res) => {
         if (!customer) {
             throw new Error("Customer not found");
         }
-        customer.balance -= creditAmount;
+        customer.balance = parseInt(customer.balance) - totalAmount;
         await customer.save();
         await newCredit.save();
 
