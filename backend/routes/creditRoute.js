@@ -26,7 +26,7 @@ router.post("/", async(req,res) => {
         await customer.save();
         await newCredit.save();
 
-        req.io.emit('newCredit',{ message: "New Credit added"});
+        req.io.emit('newCredit',{ message: "New Credit added", credit:newCredit});
         res.status(200).json({ message: "Credit added successfully!", credit: newCredit });
     }catch(err){
         res.status(400).json({ message: err.message });

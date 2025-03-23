@@ -4,7 +4,7 @@ import LoadingSpinner from './loadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000", {
+const socket = io("https://vegetable-retail-store-server.onrender.com", {
   transports: ["websocket", "polling"],
   withCredentials: true,
   reconnection: true,
@@ -74,16 +74,18 @@ const CreditCards = ({fromDate,fromTime,toDate,toTime}) => {
     }, [fromDate, fromTime, toDate, toTime]);
   
     useEffect(() => {
-      const handleNewCredit = () => {
+      function handleNewCredit(data) {
+        console.log("New credit event received:", data);
         fetchCredits();
-      };
+      }
     
-      socket.on("newCredit", handleNewCredit());
+      socket.on("newCredit", handleNewCredit);
     
       return () => {
-        socket.off("newCredit", handleNewCredit());
+        socket.off("newCredit", handleNewCredit);
       };
     }, []);
+    
   
   
   return (
