@@ -52,11 +52,15 @@ const SalesReport = () => {
   const groupSalesByLot = (sales) => {
     return sales.reduce((acc, sale) => {
       if (!acc[sale.lotName]) {
-        acc[sale.lotName] = { sales: [], totalKgs: 0, totalAmount: 0 };
+        acc[sale.lotName] = { sales: [], totalKgs: 0, totalAmount: 0, avgPricePerKg:0 };
       }
       acc[sale.lotName].sales.push(sale);
       acc[sale.lotName].totalKgs += parseFloat(sale.numberOfKgs) || 0;
       acc[sale.lotName].totalAmount += parseFloat(sale.totalAmount) || 0;
+      // Calculate avgPricePerKg
+      acc[sale.lotName].avgPricePerKg = acc[sale.lotName].totalKgs
+      ? acc[sale.lotName].totalAmount / acc[sale.lotName].totalKgs
+      : 0;
       return acc;
     }, {});
   };
@@ -115,7 +119,7 @@ const SalesReport = () => {
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>JVK Vegetable Retail Store</Text>
         <Text style={styles.reportDate}>Report Date: {new Date().toLocaleDateString()}</Text>
-        {Object.entries(groupedSales).map(([lotName, { sales, totalKgs, totalAmount }]) => (
+        {Object.entries(groupedSales).map(([lotName, { sales, totalKgs, totalAmount, avgPricePerKg }]) => (
             <View key={lotName} style={styles.section}>
               <Text style={styles.title}>Lot Name: {lotName?.split("-").slice(0,3).join("-")}</Text>
               <View style={styles.tableHeader}>
@@ -136,8 +140,14 @@ const SalesReport = () => {
                   <Text style={styles.cell}>{new Date(sale.createdAt).toLocaleString()}</Text>
                 </View>
               ))}
-              <Text style={styles.title}>Total Kgs: {totalKgs.toFixed(2)}</Text>
-              <Text style={styles.title}>Total Amount: {totalAmount.toFixed(2)}</Text>
+              <View>
+                  <Text style={styles.cell}></Text>
+                  <Text style={styles.cell}>Total Kgs: {totalKgs.toFixed(2)}</Text>
+                  <Text style={styles.cell}>Average pricePerKg: {avgPricePerKg}</Text>
+                  <Text style={styles.cell}>Total Amount: {totalAmount.toFixed(2)}</Text>
+                  <Text style={styles.cell}></Text>
+                  <Text style={styles.cell}></Text>
+                </View>
             </View>
           ))}
       </Page>
@@ -195,7 +205,7 @@ const SalesReport = () => {
         {isLoading ? (
           <LoadingSpinner />
         ) : Object.keys(filteredSales).length > 0 ? (
-          Object.entries(filteredSales)?.map(([lotName, {sales, totalKgs, totalAmount}]) => (
+          Object.entries(filteredSales)?.map(([lotName, {sales, totalKgs, totalAmount, avgPricePerKg}]) => (
             <div key={lotName} className='border p-4 mb-4'>
               <h2 className='text-lg font-bold'>{lotName?.split("-").slice(0,3).join("-")}</h2>
               <table className='w-full border-collapse border border-gray-300 mt-2'>
@@ -219,11 +229,16 @@ const SalesReport = () => {
                       <td className='border border-gray-300 p-2'>{sale.paymentType}</td>
                       <td className='border border-gray-300 p-2'>{new Date(sale.createdAt).toLocaleString()}</td>
                     </tr>
-                  ))}
+                  ))}<tr>
+                    <td className='border border-gray-300 p-2'></td>
+                      <td className='border border-gray-300 p-2'>Total Kgs: <span className='font-medium text-blue-500'>{totalKgs.toFixed(2)}</span></td>
+                      <td className='border border-gray-300 p-2'>Average Price per kg: <span className='font-medium text-blue-500'>{avgPricePerKg.toFixed(2)}</span></td>
+                      <td className='border border-gray-300 p-2'>Total Amount: <span className='font-medium text-blue-500'>{totalAmount.toFixed(2)}</span></td>
+                      <td className='border border-gray-300 p-2'></td>
+                      <td className='border border-gray-300 p-2'></td>
+                  </tr>
                 </tbody>
               </table>
-              <p className='font-semibold'>Total Kgs: {totalKgs.toFixed(2)}</p>
-              <p className='font-semibold'>Total Amount: {totalAmount.toFixed(2)}</p>
             </div>
           ))
         ) : (
