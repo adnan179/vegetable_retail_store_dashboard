@@ -176,10 +176,6 @@ const SalesPage = () => {
           <h3 className='font-medium text-lg'>Total Sales Amount Today</h3>
           <h1 className='text-2xl font-medium text-[#1E90FF]'>{totalSalesToday ? totalSalesToday : 0}</h1>
         </div>
-        <div className='flex flex-col p-4 rounded-md bg-white shadow'>
-          <h3 className='font-medium text-lg'>Filtered Sales Amount</h3>
-          <h1 className='text-2xl font-medium text-[#1E90FF]'>{totalSalesFilteredAmount ? totalSalesFilteredAmount : 0}</h1>
-        </div>
         <button onClick={() => setIsFormOpen(true)} className="px-4 py-2 rounded-md bg-green-500 text-lg font-medium text-white shadow-sm">
             Add New Sale
         </button>
@@ -321,6 +317,39 @@ const SalesPage = () => {
                     </td>
                   </tr>
                 ))}
+                <tr className="bg-gray-100 font-semibold">
+                  <td className="border border-black p-2">-</td>
+                  <td className="border border-black p-2" colSpan={2}>
+                    Total number of kgs:
+                    <span className='font-bold text-blue-600'>
+                    {
+                      filteredSales.reduce((sum, sale) => sum + Number(sale.numberOfKgs), 0)
+                    }
+                    </span>
+                    
+                  </td>
+                  <td className="border border-black p-2" colSpan={2}>
+                    Average price per kg:
+                    <span className='font-bold text-blue-600'>
+                    {
+                      (
+                        filteredSales.reduce((sum, sale) => sum + Number(sale.pricePerKg), 0) / filteredSales.length
+                      ).toFixed(2)
+                    }
+                    </span>
+                    
+                  </td>
+                  <td className="border border-black p-2" colSpan={2}>
+                    Total Amount:
+                    <span className='font-bold text-blue-600'>
+                    {
+                      filteredSales.reduce((sum, sale) => sum + Number(sale.totalAmount), 0)
+                    }
+                    </span>
+                    
+                  </td>
+                  <td className="border border-black p-2" colSpan={3}>-</td>
+                </tr>
               </tbody>
             )} 
         </table>

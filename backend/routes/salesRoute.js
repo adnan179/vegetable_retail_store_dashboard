@@ -22,7 +22,7 @@ const formatSalesMessage = (customerName, sales) => {
   sales.forEach((sale,idx) => {
     const itemTotal = sale.totalAmount;
     totalAmount += itemTotal;
-    message += `${idx +1}. Lot: ${sale.lotName}, kgs: ${sale.numberOfKgs}, price per Kg: ${sale.pricePerKg}, Total: ${itemTotal} \n\n`;
+    message += `${idx +1} ${sale.createdAt}, ${sale.lotName}, ${sale.numberOfKgs}, ${sale.pricePerKg},${itemTotal} \n\n`;
 
   });
   message += `Total Amount: ${totalAmount}`;
