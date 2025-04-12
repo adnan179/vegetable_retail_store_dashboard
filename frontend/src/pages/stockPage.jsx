@@ -28,7 +28,6 @@ const StockPage = () => {
   const [toDate, setToDate] = useState("");
   const [fromTime, setFromTime] = useState("00:00 AM"); // Default start time
   const [toTime, setToTime] = useState("11:59 PM"); // Default end time
-  const paymentStatuses = ["due","paid"];
   const [editedPaymentStatus, setEditedPaymentStatus] = useState("");
   const [editedAmount, setEditedAmount] = useState("");
   const [isEditPaymentStatus, setIsEditPaymentStatus] = useState(false);
@@ -265,11 +264,8 @@ const StockPage = () => {
             onChange={(e) => setSelectedPaymentStatus(e.target.value)}
             className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
               <option value="">Payment Status</option>
-              {paymentStatuses && paymentStatuses.map((paymentStatus,idx) => (
-                <option key={idx} value={paymentStatus}>
-                  {paymentStatus}
-                </option>
-              ))}
+              <option value="due">due</option>
+              <option value="complete">paid</option>
           </select>
           <select value={selectedStockStatus}
             onChange={(e) => setSelectedStockStatus(e.target.value)}

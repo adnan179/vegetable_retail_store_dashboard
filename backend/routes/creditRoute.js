@@ -79,6 +79,10 @@ router.delete("/:creditId", async(req,res) => {
     try{
         const credit = await Credits.findOneAndDelete({creditId:req.params.creditId});
         if(!credit) return res.status(404).json({message:"Credit not found"});
+        const customer = await Customers.findOne({customerName:credit.customerName});
+        if (!customer) return res.status(404).json({message:"Credit not found"});
+        customer.balance = parseInt(customer.balance) + parseInt(credit.totalAmount);
+        await customer.save();
         res.status(200).json({message:"Credit successfully deleted",credit});
     }catch(err){
         res.status(500).json({error:err.message});

@@ -63,13 +63,13 @@ const AddGroupForm = ({onClose, fetchGroups}) => {
             }}/>
         </div>
         {/* Reusable Input Fields */}
-      <InputField
-        inputRef={inputRef}
-        label="Group Name"
-        placeholder="Enter group Name"
-        value={formData.groupName}
-        onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
-      />
+        <InputField
+            inputRef={inputRef}
+            label="Group Name"
+            placeholder="Enter group Name"
+            value={formData.groupName}
+            onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
+        />
         
         <div className="flex flex-row gap-3">
             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">

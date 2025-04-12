@@ -79,19 +79,14 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
         // Get current date (DDMMYY format)
         const date = new Date();
         const formattedDate = `${date.getDate()}${date.getMonth() + 1}${date.getFullYear().toString().slice(-2)}`;
-        const randomNumber = Math.random(0,1000).toString().slice(2,5);
+        const randomNumber = Math.random(0,10000).toFixed(0).toString()
 
         // Combine to form lotName
         const salesId = `${customerShort?.toUpperCase()}-${lotShort?.toUpperCase()}-${formattedDate}-${randomNumber}`;
-        // Update formData with generated lotName
-        setFormData({ ...formData, salesId:salesId });
+        return salesId;
     };
 
-    // Auto-generate lotName when all required fields are filled
-    useEffect(() => {
-        generateSalesId();
-    }, [formData.customerName, formData.lotName, formData.numberOfKgs, formData.pricePerKg, formData.paymentType]);
-    
+    //function to generate amount based on number of kgs and price per kg
     const generateAmount = () => {
         setFormData({...formData, totalAmount:(formData.numberOfKgs)*(formData.pricePerKg)})
     };
@@ -114,8 +109,9 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        const newSalesId = generateSalesId();
         const formattedData = {
-            salesId:formData.salesId,
+            salesId:newSalesId,
             customerName:formData.customerName,
             lotName: formData.lotName,
             numberOfKgs: formData.numberOfKgs,

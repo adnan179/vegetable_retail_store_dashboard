@@ -114,14 +114,16 @@ const Operators = () => {
         </button>
       </div>
       {isFormOpen && (
-        <div className='inset-0 fixed flex w-full h-screen bg-black/20 justify-center items-center z-50'>
-          <AddOperatorForm 
-            fetchOperators={fetchOperators}
-            operator={selectedOperator}
-            onClose={() => setIsFormOpen(false)}
-            onCloseEdit={() => setIsEditOperator(false)}
-            isEdit={isEditOperator}
-          />
+        <div onClick={() => setIsFormOpen(false)} className='inset-0 fixed flex w-full h-screen bg-black/50 justify-center items-center z-50'>
+          <div onClick={(e) => e.stopPropagation()} >
+            <AddOperatorForm 
+              fetchOperators={fetchOperators}
+              operator={selectedOperator}
+              onClose={() => setIsFormOpen(false)}
+              onCloseEdit={() => setIsEditOperator(false)}
+              isEdit={isEditOperator}
+            />
+          </div>
         </div>
         
       )}

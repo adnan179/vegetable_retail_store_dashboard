@@ -101,13 +101,16 @@ const VegetablesPage = () => {
       </table>
       {isFormOpen && (
         <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-          <AddVegetableForm 
-            onClose={() => setIsFormOpen(false)}
-            fetchVegetables={fetchVegetables}
-            vegetable={selectedVegetable}
-            isEdit={isEdit}
-            onCloseEdit={() => setIsEdit(false)}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <AddVegetableForm 
+              onClose={() => setIsFormOpen(false)}
+              fetchVegetables={fetchVegetables}
+              vegetable={selectedVegetable}
+              isEdit={isEdit}
+              onCloseEdit={() => setIsEdit(false)}
+            />
+          </div>
+          
         </div>
       )}
     </section>

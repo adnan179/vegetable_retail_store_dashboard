@@ -355,13 +355,15 @@ const SalesPage = () => {
         </table>
         {isFormOpen && (
           <div onClick={() => setIsFormOpen(false)} className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
-          <AddSalesForm
-            onClose={() => setIsFormOpen(false)}
-            fetchSales={fetchSales}
-            sale={selectedSale}
-            isEdit={isEdit}
-            onCloseEdit={() => setIsEdit(false)}
-          />
+            <div onClick={(e) => e.stopPropagation()}>
+              <AddSalesForm
+                onClose={() => setIsFormOpen(false)}
+                fetchSales={fetchSales}
+                sale={selectedSale}
+                isEdit={isEdit}
+                onCloseEdit={() => setIsEdit(false)}
+              />
+            </div>
         </div>
         )}
         {isDeletedData && (

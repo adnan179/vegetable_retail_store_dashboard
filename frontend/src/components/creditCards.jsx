@@ -89,7 +89,7 @@ const CreditCards = ({fromDate,fromTime,toDate,toTime}) => {
   
   
   return (
-    <div className="flex flex-col w-full h-full p-3 rounded-md overflow-auto bg-white">
+    <div className="flex flex-col w-full p-3 rounded-md overflow-auto bg-white">
         <h1 className="text-black text-xl font-semibold">Jamalu</h1>
         {/* table */}
         <table className="w-full mt-5 border-separate border border-black rounded-lg">

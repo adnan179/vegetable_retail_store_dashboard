@@ -92,7 +92,7 @@ const SaleCards = ({ fromDate, fromTime, toDate, toTime }) => {
   
 
   return (
-    <div className="w-full h-full flex flex-col gap-5 p-3 rounded-md shadow bg-white">
+    <div className="w-full h-full flex flex-col gap-5 p-3 rounded-md shadow bg-white overflow-auto">
       <h2 className="text-lg font-medium">Today's Sales</h2>
       <div className="flex flex-col gap-3">
         {Object.entries(filteredSales).length > 0 ? (

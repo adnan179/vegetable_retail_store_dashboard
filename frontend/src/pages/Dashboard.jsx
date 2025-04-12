@@ -34,7 +34,6 @@ const Dashboard = () => {
   return (
     <section className="flex flex-col w-[100%-110px] min-h-screen ml-[100px] p-5">
       <h1 className='font-medium text-lg'>Welcome {user.role && user.role}: {user.userName && user.userName}</h1>
-      
       <div className='flex flex-row gap-3 mt-5'>
         {user.role === "admin" && <Operators />}
         
@@ -76,10 +75,15 @@ const Dashboard = () => {
 
       {/* credits and Sales Data Display */}
       <div className='flex flex-row gap-3 w-full mt-3'>
-        <div className='w-[40%] h-full'>
-          <CreditCards/>
+        <div className='w-[40%] max-h-[calc(100vh-350px)] overflow-auto'>
+          <CreditCards
+            fromDate={fromDate}
+            fromTime={fromTime}
+            toTime={toTime}
+            toDate={toDate}
+          />
         </div>
-        <div className='w-[60%] h-full'>
+        <div className='w-[60%] max-h-[calc(100vh-350px)]'>
           <SaleCards 
             fromDate={fromDate}
             fromTime={fromTime}

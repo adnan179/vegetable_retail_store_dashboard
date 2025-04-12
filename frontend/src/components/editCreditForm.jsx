@@ -59,6 +59,16 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    const totalAmount = parseFloat(formData.creditAmount || 0) + parseFloat(formData.less || 0);
+    const customerBalance = parseFloat(selectedCustomer?.balance || 0);
+    
+    if (totalAmount > customerBalance) {
+      setError("Total amount cannot exceed customer's balance");
+      toast.error("Total amount exceeds customer's balance");
+      setIsLoading(false);
+      return;
+    }
     // formatted data for submission
     const generateCreditId = () => {
       return `credit-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -96,6 +106,7 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    
     
     const formattedData = {
       creditId:selectedCreditId,
@@ -179,6 +190,9 @@ const EditCreditForm = ({ isEdit,fetchCredits, credit,onClose, onCloseEdit}) => 
         onChange={(e) => setFormData({ ...formData, less: e.target.value })}
       />
       <h2 className='w-full text-lg'>Total Amount: <span className='text-green-500 font-medium'>{parseInt(formData.creditAmount ? formData.creditAmount : 0) + parseInt(formData.less ? formData.less : 0)}</span></h2>
+      {!isEdit && (
+        <h2 className='w-full text-lg'>Balance left: <span className='text-red-500 font-medium'>{parseInt(selectedCustomer?.balance || 0)-(parseInt(formData.creditAmount ? formData.creditAmount : 0) + parseInt(formData.less ? formData.less : 0))}</span></h2>
+      )}
       <div className="flex flex-row gap-3">
         <button type="button" onClick={handleCancel} className="px-4 py-2 rounded text-white font-medium bg-[#D74848]">
             Cancel

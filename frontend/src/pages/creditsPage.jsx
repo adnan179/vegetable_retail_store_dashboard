@@ -156,7 +156,9 @@ const CreditsPage = () => {
           <h3 className='font-medium text-sm'>Today Jamalu Amount</h3>
           <h1 className='text-xl font-medium text-[#FF0000]'>{totalCreditsToday ? totalCreditsToday : 0}</h1>
         </div>
-        <button onClick={() => setIsFormOpen(true)}
+        <button onClick={() => {
+          console.log(isEdit)
+          setIsFormOpen(true)}}
         className='px-4 py-2 bg-green-500 rounded-md text-white font-medium text-lg'>Pay Jamalu</button>
         <button onClick={() => setIsHistoryData(!isHistoryData)}
           className="px-4 py-2 rounded-md text-white font-medium bg-blue-500 shadow-sm">
@@ -264,9 +266,9 @@ const CreditsPage = () => {
                     <td className="border border-black p-2">{credit.createdBy}</td>
                     <td className="border border-black p-2">{new Date(credit.createdAt).toLocaleString()}</td>
                     <td className="border border-black p-2">
-                        <button onClick={() => handleEdit(credit)} className="bg-gray-200 text-[#1E90FF] font-bold cursor-pointer px-4 py-2 rounded">
-                            Edit
-                        </button>
+                      <button onClick={() => handleEdit(credit)} className="bg-gray-200 text-[#1E90FF] font-bold cursor-pointer px-4 py-2 rounded">
+                        Edit
+                      </button>
                     </td>
                     <td className="border border-black p-2">
                         <button onClick={() => handleDelete(credit.creditId)} className="bg-gray-200 text-[#FF0000] font-bold cursor-pointer px-4 py-2 rounded">
@@ -285,7 +287,8 @@ const CreditsPage = () => {
                 isEdit={isEdit}
                 onClose={() => setIsFormOpen(false)}
                 onCloseEdit={() => {
-                  setSelectedCredit(null)
+                  setSelectedCredit(null);
+                  setIsEdit(false);
                   setIsFormOpen(false)
                 }}
                 fetchCredits={fetchCredits}
