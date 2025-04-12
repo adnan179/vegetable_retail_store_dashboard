@@ -45,7 +45,7 @@ const App = () => {
   
   return (
     <AuthProvider>
-      <ToastContainer/>
+      <ToastContainer autoClose={1000}/>
       <Router>
         <Layout/>
       </Router>
