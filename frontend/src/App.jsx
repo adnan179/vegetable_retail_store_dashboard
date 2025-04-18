@@ -15,6 +15,7 @@ import StockPage from './pages/stockPage';
 import SalesPage from './pages/salesPage';
 import CreditsPage from './pages/creditsPage';
 import ReportsPage from './pages/reportsPage';
+import Ledger from './pages/lendger';
 
 const Layout = () => {
   const location = useLocation();
@@ -35,7 +36,8 @@ const Layout = () => {
           <Route path="/inventory" element={<StockPage/>}/>
           <Route path="/sales" element={<SalesPage/>}/>
           <Route path="/jamalu" element={<CreditsPage/>}/>
-          <Route path="reports" element={<ReportsPage/>}/>
+          <Route path="/reports" element={<ReportsPage/>}/>
+          <Route path="/ledger" element={<Ledger />} />
         </Route>
       </Routes>
     </>

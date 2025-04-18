@@ -3,6 +3,8 @@ const router = express.Router();
 
 const Customers = require("../models/customerSchema");
 const customersHistorySchema = require('../models/customersHistorySchema');
+const Sales = require("../models/salesSchema");
+const Credits = require("../models/creditSchema");
 
 router.post("/", async(req,res) => {
     try{
@@ -30,7 +32,6 @@ router.get("/", async(req,res) => {
 
 router.put("/:customerName", async (req, res) => {
     try {
-
         const updatedCustomer = await Customers.findOneAndUpdate(
             { customerName: req.params.customerName },
             req.body,
@@ -62,6 +63,24 @@ router.delete("/:customerName", async (req,res) => {
         res.status(200).json({message:"Customer deleted successfully", deletedCustomer});
     }catch(err){
         res.status(500).json({error:err.message})
+    }
+});
+
+router.get("/:customerName",async(req,res) =>{
+    const { customerName } = req.params;
+    try {
+        const customer = await Customers.findOne({customerName});
+        if(!customer) {
+            console.log("Customer not found");
+            return res.status(404).json({message:"Customer not found"});
+        }
+        const sales = await Sales.find({customerName});
+        const credits = await Credits.find({customerName});
+        res.status(200).json({customer, sales, credits});
+
+    }catch(err){
+        res.status(500).json({error:err.message});
+        console.log(err.message);
     }
 });
 

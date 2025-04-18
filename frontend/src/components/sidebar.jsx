@@ -17,6 +17,8 @@ import groupIcon from "../assets/icons8-category-48.png";
 import groupWhiteIcon from "../assets/group-white-icon.png";
 import reportIcon from "../assets/report-icon.png";
 import reportWhiteIcon from "../assets/report-white-icon.png";
+import ledgerIcon from "../assets/ledger-black.png";
+import ledgerWhiteIcon from "../assets/ledger-white.png";
 import { useAuth } from '../context/AuthContext';
 
 const navLinks = [
@@ -25,6 +27,7 @@ const navLinks = [
     { title: "Sales", link: "/sales", icon: salesIcon, selectedIcon: salesWhiteIcon },
     { title: "Credit", link: "/jamalu", icon: creditIcon, selectedIcon: creditWhiteIcon },
     { title: "Customers", link: "/customers", icon: peopleIcon, selectedIcon: peopleWhiteIcon },
+    { title: "Ledger", link: "/ledger", icon: ledgerIcon, selectedIcon: ledgerWhiteIcon },
     { title: "Farmers", link: "/farmers", icon: peopleIcon, selectedIcon: peopleWhiteIcon },
     { title: "Vegetables", link: "/vegetables", icon: vegetableIcon, selectedIcon: vegetableWhiteIcon },
     { title: "Groups", link: "/groups", icon: groupIcon, selectedIcon: groupWhiteIcon },
