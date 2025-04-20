@@ -69,22 +69,17 @@ const AddSalesForm = ({onClose, fetchSales, sale, isEdit, onCloseEdit}) => {
             return;
         }
 
-        // Extract first, middle, and last character from farmerName
         const customerShort = formData.customerName.length >= 3 
             ? `${formData.customerName[0]}${formData.customerName[Math.floor(formData.customerName.length / 2)]}${formData.customerName[formData.customerName.length - 1]}` 
             : formData.customerName;
 
-        const lotShort = formData.lotName.slice(0,5);
+        const lotShort = formData.lotName.slice(0, 5);
+        const timestamp = Date.now(); // millisecond precision
+        const randomSuffix = Math.floor(Math.random() * 1000); // 0-999
 
-        // Get current date (DDMMYY format)
-        const date = new Date();
-        const formattedDate = `${date.getDate()}${date.getMonth() + 1}${date.getFullYear().toString().slice(-2)}`;
-        const randomNumber = Math.random(0,10000).toFixed(0).toString()
-
-        // Combine to form lotName
-        const salesId = `${customerShort?.toUpperCase()}-${lotShort?.toUpperCase()}-${formattedDate}-${randomNumber}`;
-        return salesId;
+        return `${customerShort?.toUpperCase()}-${lotShort?.toUpperCase()}-${timestamp}-${randomSuffix}`;
     };
+
 
     //function to generate amount based on number of kgs and price per kg
     const generateAmount = () => {

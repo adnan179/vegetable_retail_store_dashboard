@@ -15,6 +15,29 @@ const Ledger = () => {
     const [credits, setCredits] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [fromDate, setFromDate] = useState("");
+    const [vegetables, setVegetables] = useState([]);
+
+    //fetch all vegetables
+    useEffect(() => {
+        const fetchVegetables = async () => {
+            try{
+                const response = await axios.get(`${backendURL}/vegetables`);
+                setVegetables(response.data);
+                console.log(response.data)
+            }catch(err){
+                console.error("Error fetching vegetables:", err);
+                toast.error("Error fetching vegetables");
+            }
+        };
+
+        fetchVegetables();    
+    },[]);
+
+    const getVegetableNameFromLot = (shortcut) => {
+        const match = vegetables.find(v => v.shortName?.toLowerCase() === shortcut.toLowerCase());
+        return match ? match.vegetableName : "No vegetable found";
+    };
+    
 
     // Fetch all customers
     useEffect(() => {
@@ -98,7 +121,7 @@ const Ledger = () => {
     }, [sales, credits, fromDate]);
 
     return (
-        <section className='w-full min-h-screen p-10 ml-[100px]'>
+        <section className='w-[calc(100wh-110px)] min-h-screen p-10 ml-[100px]'>
             <div className='flex gap-3 mb-6 fixed top-4 left-[140px]'>
                 <Autocomplete
                     className="mui-white-text w-[200px] rounded-md bg-blue-500"
@@ -131,24 +154,24 @@ const Ledger = () => {
                 <>
                     {customerData && (
                         <div className='flex gap-4 mb-4 mt-10'>
-                            <div className='px-8 py-4 border rounded-lg shadow-lg bg-white'>
+                            <div className='px-8 py-4 border rounded-2xl shadow-lg bg-white'>
                                 <h2 className='text-lg'>Customer Name: <strong>{customerData.customerName}</strong></h2>
                                 <p>Phone: <strong>{customerData.phoneNumber}</strong> </p>
                                 <p>Village:<strong>{customerData.villageName}</strong></p>
                                 <p>Group: <strong>{customerData.groupName}</strong></p>
-                                <p>Balance: <strong>{customerData.balance}</strong></p>
+                               
                             </div>
                             {(groupedData.length > 0) && (
-                                <div className='p-4 text-lg border bg-white rounded-lg shadow-md font-semibold'>
-                                    <p>Total Sales: <span className='text-blue-500'>{totals.totalSales}</span></p>
-                                    <p>Total Credits:<span className='text-blue-500'>{totals.totalCredits}</span></p>
+                                <div className='p-4 text-lg border bg-white rounded-2xl shadow-md font-semibold'>
+                                    <p>Balance: <strong className='text-red-500 font-semibold'>{customerData.balance}</strong></p>
+                                    <p>Total Sales Till today: <span className='text-blue-500'>{totals.totalSales}</span></p>
+                                    <p>Total Credits paid:<span className='text-blue-500'>{totals.totalCredits}</span></p>
                                 </div>
                             )}
                         </div> 
                     )}
-
                     {groupedData.map(({ date, sales, credits }) => (
-                        <div key={date} className="mb-4 p-4 border rounded bg-white shadow-sm">
+                        <div key={date} className="mb-4 p-4 border rounded-2xl bg-white shadow-sm">
                             <h3 className="font-semibold text-blue-700 mb-2">{dayjs(date).format("DD MMM YYYY")}</h3>
 
                             {sales.length > 0 ? (
@@ -157,23 +180,30 @@ const Ledger = () => {
                                     <table className="w-full mb-4 text-left border border-gray-300">
                                         <thead className="bg-gray-100">
                                             <tr>
+                                                <th className="border px-2 py-1">Lot name</th>
+                                                <th className="border px-2 py-1">Vegetable name</th>
                                                 <th className="border px-2 py-1">Number of kgs</th>
                                                 <th className="border px-2 py-1">Price per kg</th>
                                                 <th className="border px-2 py-1">Total amount</th>
-                                                <th className="border px-2 py-1">Lot name</th>
+                                               
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {sales.map((s, idx) => (
                                                 <tr key={idx} className="hover:bg-gray-50">
+                                                    <td className="border px-2 py-1">{s.lotName.split('-').slice(0,3).join('-')}</td>
+                                                    <td className="border px-2 py-1">{getVegetableNameFromLot(s.lotName.split('-')[1])}</td>
                                                     <td className="border px-2 py-1">{s.numberOfKgs}</td>
                                                     <td className="border px-2 py-1">₹{s.pricePerKg}</td>
                                                     <td className="border px-2 py-1">₹{s.totalAmount}</td>
-                                                    <td className="border px-2 py-1">{s.lotName.split('-').slice(0,3).join('-')}</td>
+                                                    
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
+                                    <div className='flex justify-end pr-2 mb-4'>
+                                        <p>Total Sales: <span className='text-green-500 font-medium'>{sales.reduce((sum,s) => sum+s.totalAmount,0)}</span></p>
+                                    </div>
                                 </>
                             ) : <p className="mb-4 text-red-500 font-semibold">No Sales Data</p>}
 
@@ -198,6 +228,9 @@ const Ledger = () => {
                                             ))}
                                         </tbody>
                                     </table>
+                                    <div className='flex justify-end pr-2 mb-4'>
+                                        <p>Total Credit paid: <span className='text-green-500 font-medium'>{credits.reduce((sum,s) => sum+s.totalAmount,0)}</span></p>
+                                    </div>
                                 </>
                             ) : <p className='text-red-500 font-semibold'>No Credit Data</p>}
 
