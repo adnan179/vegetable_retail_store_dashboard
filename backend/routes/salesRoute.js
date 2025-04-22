@@ -9,6 +9,7 @@ const Credit = require("../models/creditSchema");
 const Customer = require("../models/customerSchema");
 const DeletedSales = require('../models/deletedSalesSchema');
 const salesHistorySchema = require('../models/salesHistorySchema');
+const CustomerLedger = require('../models/customerLedgerSchema');
 
 const router = express.Router();
 const WHATSAPP_API_URL = "https://graph.facebook.com/v19.0";
@@ -107,17 +108,6 @@ router.post("/", async (req, res) => {
       createdBy,
     } = req.body;
 
-    // Find customer and update balance
-    if(paymentType === 'credit'){
-      const customer = await Customer.findOne({ customerName }).session(session);
-      if (!customer) {
-        console.log("customer not found")
-        return res.status(404).json("Customer not found");
-      }
-      customer.balance += totalAmount;
-      await customer.save({ session });
-    }
-
     // Check stock availability
     const stock = await Stock.findOne({ lotName }).session(session);
     if (!stock) {
@@ -128,6 +118,27 @@ router.post("/", async (req, res) => {
     }
     stock.remainingBags -= 1;
     await stock.save({ session });
+    // Find customer and update balance
+    if(paymentType === 'credit'){
+      const customer = await Customer.findOne({ customerName }).session(session);
+      if (!customer) {
+        console.log("customer not found")
+        return res.status(404).json("Customer not found");
+      }
+      const prevBalance = customer.balance;
+      customer.balance += totalAmount;
+      await customer.save({ session });
+
+      await CustomerLedger.create([{
+        customerName,
+        type: "sale",
+        referenceId: salesId,
+        amount: totalAmount,
+        previousBalance: prevBalance,
+        updatedBalance: customer.balance,
+        createdBy
+      }],{session});
+    }
 
     // Create new sale entry
     const newSale = new Sales({
@@ -205,50 +216,64 @@ router.get("/history", async (req,res) => {
   }
 });
   
-router.delete("/:salesId", async (req,res) => {
+router.delete("/:salesId", async (req, res) => {
   const { deletedBy } = req.body;
+
   if (!deletedBy) {
     return res.status(400).json({ message: "deletedBy field is required" });
   }
+
   const session = await mongoose.startSession();
   session.startTransaction();
-  try{
-    const sale = await Sales.findOne({salesId:req.params.salesId}).session(session);
-    if(!sale){
+
+  try {
+    const sale = await Sales.findOne({ salesId: req.params.salesId }).session(session);
+    if (!sale) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({message:"Sale not found"});
-    };
-
-    const deletedSale = new DeletedSales({
-      ...sale.toObject(),
-      deletedBy: deletedBy,
-      deletedAt: new Date(),
-    });
-
-    await deletedSale.save({ session });
-    if(sale.paymentType.startsWith("credit-")){
-      const creditId = sale.paymentType.replace("credit-","");
-      await Credit.findOneAndDelete({ creditId:creditId}).session(session);
+      return res.status(404).json({ message: "Sale not found" });
     }
 
-    // Increment remainingBags in StockSchema
+    // Archive sale
+    const deletedSale = new DeletedSales({
+      ...sale.toObject(),
+      deletedBy,
+      deletedAt: new Date(),
+    });
+    await deletedSale.save({ session });
+
+    // Remove linked credit (if applicable)
+    if (sale.paymentType.startsWith("credit-")) {
+      const creditId = sale.paymentType.replace("credit-", "");
+      await Credits.findOneAndDelete({ creditId }).session(session);
+
+      // Delete associated ledger entry
+      await CustomerLedger.deleteOne({ referenceId: creditId }).session(session);
+    }
+
+    // Restore stock
     const stock = await Stock.findOne({ lotName: sale.lotName }).session(session);
     if (stock) {
       stock.remainingBags += 1;
       await stock.save({ session });
     }
-    await Sales.deleteOne({salesId:req.params.salesId}).session(session);
+
+    // Delete sale and its ledger
+    await Sales.deleteOne({ salesId: req.params.salesId }).session(session);
+    await CustomerLedger.deleteOne({ referenceId: req.params.salesId }).session(session);
+
     await session.commitTransaction();
     session.endSession();
-    res.status(200).json({message:"Sale and associated credit deleted successfully"});
-  }catch(err){
+
+    res.status(200).json({ message: "Sale and associated credit/ledger deleted successfully" });
+  } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    res.status(500).json({error:err.message});
-    console.log("failed to delete the sale and associated credit",err.message);
+    console.log("Failed to delete sale and associated credit:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
   
 router.get("/deletedSales", async (req, res) => {
   try {

@@ -5,6 +5,7 @@ const Customers = require("../models/customerSchema");
 const customersHistorySchema = require('../models/customersHistorySchema');
 const Sales = require("../models/salesSchema");
 const Credits = require("../models/creditSchema");
+const CustomerLedger = require("../models/customerLedgerSchema");
 
 router.post("/", async(req,res) => {
     try{
@@ -70,13 +71,18 @@ router.get("/:customerName",async(req,res) =>{
     const { customerName } = req.params;
     try {
         const customer = await Customers.findOne({customerName});
+        const ledger = await CustomerLedger.find({customerName}).sort({createdAt:-1});
         if(!customer) {
             console.log("Customer not found");
             return res.status(404).json({message:"Customer not found"});
         }
+        if(!ledger) {
+            console.log("Ledger not found");
+            return res.status(404).json({message:"Ledger not found"});
+        }
         const sales = await Sales.find({customerName});
         const credits = await Credits.find({customerName});
-        res.status(200).json({customer, sales, credits});
+        res.status(200).json({customer, ledger});
 
     }catch(err){
         res.status(500).json({error:err.message});

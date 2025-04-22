@@ -11,35 +11,11 @@ const Ledger = () => {
     const [customers, setCustomers] = useState([]);
     const [selectedCustomerName, setSelectedCustomerName] = useState("");
     const [customerData, setCustomerData] = useState(null);
-    const [sales, setSales] = useState([]);
-    const [credits, setCredits] = useState([]);
+    const [ledger, setLedger] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [fromDate, setFromDate] = useState("");
-    const [vegetables, setVegetables] = useState([]);
 
-    //fetch all vegetables
-    useEffect(() => {
-        const fetchVegetables = async () => {
-            try{
-                const response = await axios.get(`${backendURL}/vegetables`);
-                setVegetables(response.data);
-                console.log(response.data)
-            }catch(err){
-                console.error("Error fetching vegetables:", err);
-                toast.error("Error fetching vegetables");
-            }
-        };
-
-        fetchVegetables();    
-    },[]);
-
-    const getVegetableNameFromLot = (shortcut) => {
-        const match = vegetables.find(v => v.shortName?.toLowerCase() === shortcut.toLowerCase());
-        return match ? match.vegetableName : "No vegetable found";
-    };
-    
-
-    // Fetch all customers
+    //fetching customers
     useEffect(() => {
         const fetchCustomers = async () => {
             setIsLoading(true);
@@ -47,7 +23,6 @@ const Ledger = () => {
                 const response = await axios.get(`${backendURL}/customers`);
                 setCustomers(response.data);
             } catch (err) {
-                console.error("Error fetching customers:", err);
                 toast.error("Error fetching customers");
             } finally {
                 setIsLoading(false);
@@ -56,25 +31,22 @@ const Ledger = () => {
         fetchCustomers();
     }, [backendURL]);
 
-    // Fetch customer details
+    //fetching customer details and ledger
     const fetchCustomerDetails = useCallback(async (customerName) => {
         setIsLoading(true);
         try {
-            console.log(customerName)
             const response = await axios.get(`${backendURL}/customers/${customerName}`);
-            const { customer, sales, credits } = response.data;
+            const { customer, ledger } = response.data;
             setCustomerData(customer);
-            setSales(sales);
-            setCredits(credits);
+            setLedger(ledger);
         } catch (err) {
-            console.error("Error fetching customer details:", err);
-            toast.error("Error fetching customer details");
+            toast.error("Error fetching customer ledger");
         } finally {
             setIsLoading(false);
         }
     }, [backendURL]);
 
-    // Handle selection change
+    //handling customer change in the select dropdown
     const handleCustomerChange = useCallback((_, newValue) => {
         if (newValue) {
             setSelectedCustomerName(newValue);
@@ -82,50 +54,49 @@ const Ledger = () => {
         } else {
             setSelectedCustomerName("");
             setCustomerData(null);
-            setSales([]);
-            setCredits([]);
+            setLedger([]);
         }
     }, [fetchCustomerDetails]);
 
-    // Memoized grouping of sales and credits
-    const { groupedData, totals } = useMemo(() => {
-        if (!sales.length && !credits.length) return { groupedData: [], totals: { totalSales: 0, totalCredits: 0 } };
+    // Group ledger by date and type
+    const groupedLedger = useMemo(() => {
+        if (!ledger.length) return [];
 
         const grouped = new Map();
-        let totalSales = 0;
-        let totalCredits = 0;
 
-        sales
-            .filter(s => !fromDate || dayjs(s.createdAt).isAfter(fromDate) || dayjs(s.createdAt).isSame(fromDate))
-            .forEach(s => {
-                const date = dayjs(s.createdAt).format("YYYY-MM-DD");
-                if (!grouped.has(date)) grouped.set(date, { sales: [], credits: [] });
-                grouped.get(date).sales.push(s);
-                totalSales += s.totalAmount;
+        ledger
+            .filter(txn => !fromDate || dayjs(txn.createdAt).isAfter(fromDate) || dayjs(txn.createdAt).isSame(fromDate))
+            .forEach(txn => {
+                const date = dayjs(txn.createdAt).format("YYYY-MM-DD");
+                if (!grouped.has(date)) {
+                    grouped.set(date, { sales: [], credits: [] });
+                }
+                grouped.get(date)[txn.type === 'sale' ? 'sales' : 'credits'].push(txn);
             });
 
-        credits
-            .filter(c => !fromDate || dayjs(c.createdAt).isAfter(fromDate) || dayjs(c.createdAt).isSame(fromDate))
-            .forEach(c => {
-                const date = dayjs(c.createdAt).format("YYYY-MM-DD");
-                if (!grouped.has(date)) grouped.set(date, { sales: [], credits: [] });
-                grouped.get(date).credits.push(c);
-                totalCredits += c.totalAmount;
-            });
-
-        const sortedGrouped = Array.from(grouped.entries())
+        return Array.from(grouped.entries())
             .sort(([a], [b]) => dayjs(a).isAfter(b) ? 1 : -1)
             .map(([date, data]) => ({ date, ...data }));
+    }, [ledger, fromDate]);
 
-        return { groupedData: sortedGrouped, totals: { totalSales, totalCredits } };
-    }, [sales, credits, fromDate]);
+    // Calculate totals
+    const { totalSales, totalCredits } = useMemo(() => {
+        let sales = 0, credits = 0;
+        ledger
+            .filter(txn => !fromDate || dayjs(txn.createdAt).isAfter(fromDate) || dayjs(txn.createdAt).isSame(fromDate))
+            .forEach(txn => {
+                if (txn.type === "sale") sales += txn.amount;
+                else if (txn.type === "credit") credits += txn.amount;
+            });
+        return { totalSales: sales, totalCredits: credits };
+    }, [ledger, fromDate]);
 
     return (
         <section className='w-[calc(100wh-110px)] min-h-screen p-10 ml-[100px]'>
-            <div className='flex gap-3 mb-6 fixed top-4 left-[140px]'>
+            <div className='flex gap-3 mb-6 fixed top-4 left-[140px] z-10'>
                 <Autocomplete
                     className="mui-white-text w-[200px] rounded-md bg-blue-500"
-                    options={customers.map((c) => c.customerName)}
+                    options={customers.map(c => c.customerName)}
                     value={selectedCustomerName || null}
                     onChange={handleCustomerChange}
                     renderInput={(params) => (
@@ -138,7 +109,6 @@ const Ledger = () => {
                         />
                     )}
                 />
-
                 <TextField
                     label="From Date"
                     type="date"
@@ -148,94 +118,85 @@ const Ledger = () => {
                 />
             </div>
 
-            {isLoading ? (
-                <LoadingSpinner />
-            ) : (
+            {isLoading ? <LoadingSpinner /> : (
                 <>
                     {customerData && (
                         <div className='flex gap-4 mb-4 mt-10'>
                             <div className='px-8 py-4 border rounded-2xl shadow-lg bg-white'>
                                 <h2 className='text-lg'>Customer Name: <strong>{customerData.customerName}</strong></h2>
-                                <p>Phone: <strong>{customerData.phoneNumber}</strong> </p>
-                                <p>Village:<strong>{customerData.villageName}</strong></p>
+                                <p>Phone: <strong>{customerData.phoneNumber}</strong></p>
+                                <p>Village: <strong>{customerData.villageName}</strong></p>
                                 <p>Group: <strong>{customerData.groupName}</strong></p>
-                               
                             </div>
-                            {(groupedData.length > 0) && (
-                                <div className='p-4 text-lg border bg-white rounded-2xl shadow-md font-semibold'>
-                                    <p>Balance: <strong className='text-red-500 font-semibold'>{customerData.balance}</strong></p>
-                                    <p>Total Sales Till today: <span className='text-blue-500'>{totals.totalSales}</span></p>
-                                    <p>Total Credits paid:<span className='text-blue-500'>{totals.totalCredits}</span></p>
-                                </div>
-                            )}
-                        </div> 
+                            <div className='p-4 text-lg border bg-white rounded-2xl shadow-md font-semibold'>
+                                <p>Current Balance: <span className='text-red-500 font-semibold'>{customerData.balance}</span></p>
+                                <p>Total Sales: <span className='text-blue-600 font-semibold'>{totalSales}</span></p>
+                                <p>Total Credits: <span className='text-blue-600 font-semibold'>{totalCredits}</span></p>
+                            </div>
+                        </div>
                     )}
-                    {groupedData.map(({ date, sales, credits }) => (
-                        <div key={date} className="mb-4 p-4 border rounded-2xl bg-white shadow-sm">
-                            <h3 className="font-semibold text-blue-700 mb-2">{dayjs(date).format("DD MMM YYYY")}</h3>
 
-                            {sales.length > 0 ? (
+                    {groupedLedger.map(({ date, sales, credits }) => {
+                        sales.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                        credits.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+                        return(
+                        <div key={date} className="mb-4 p-4 border rounded-2xl bg-white shadow-sm">
+                            <h3 className="font-semibold text-blue-700 mb-4">{dayjs(date).format("DD MMM YYYY")}</h3>
+
+                            {sales.length > 0 && (
                                 <>
-                                    <h4 className="font-semibold mb-1">Sales:</h4>
-                                    <table className="w-full mb-4 text-left border border-gray-300">
+                                    <h4 className="text-green-600 font-semibold mb-2">Sales</h4>
+                                    <table className="w-full text-left border border-gray-300 mb-4">
                                         <thead className="bg-gray-100">
                                             <tr>
-                                                <th className="border px-2 py-1">Lot name</th>
-                                                <th className="border px-2 py-1">Vegetable name</th>
-                                                <th className="border px-2 py-1">Number of kgs</th>
-                                                <th className="border px-2 py-1">Price per kg</th>
-                                                <th className="border px-2 py-1">Total amount</th>
-                                               
+                                                <th className="border px-2 py-1">Previous Balance</th>
+                                                <th className="border px-2 py-1">Amount</th>
+                                                <th className="border px-2 py-1">Current Balance</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {sales.map((s, idx) => (
-                                                <tr key={idx} className="hover:bg-gray-50">
-                                                    <td className="border px-2 py-1">{s.lotName.split('-').slice(0,3).join('-')}</td>
-                                                    <td className="border px-2 py-1">{getVegetableNameFromLot(s.lotName.split('-')[1])}</td>
-                                                    <td className="border px-2 py-1">{s.numberOfKgs}</td>
-                                                    <td className="border px-2 py-1">₹{s.pricePerKg}</td>
-                                                    <td className="border px-2 py-1">₹{s.totalAmount}</td>
-                                                    
+                                            {sales.map((txn, idx) => (
+                                                <tr key={`sale-${idx}`} className="hover:bg-gray-50">
+                                                    <td className="border px-2 py-1">{txn.previousBalance}</td>
+                                                    <td className="border px-2 py-1 font-semibold text-green-600">
+                                                        {txn.previousBalance} + {txn.amount}
+                                                    </td>
+                                                    <td className="border px-2 py-1">{txn.updatedBalance}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
-                                    <div className='flex justify-end pr-2 mb-4'>
-                                        <p>Total Sales: <span className='text-green-500 font-medium'>{sales.reduce((sum,s) => sum+s.totalAmount,0)}</span></p>
-                                    </div>
                                 </>
-                            ) : <p className="mb-4 text-red-500 font-semibold">No Sales Data</p>}
+                            )}
 
-                            {credits.length > 0 ? (
+                            {credits.length > 0 && (
                                 <>
-                                    <h4 className="font-semibold mb-1">Jamalu:</h4>
+                                    <h4 className="text-red-600 font-semibold mb-2">Credits</h4>
                                     <table className="w-full text-left border border-gray-300">
                                         <thead className="bg-gray-100">
                                             <tr>
-                                                <th className="border px-2 py-1">Jamalu Amount</th>
-                                                <th className="border px-2 py-1">Less</th>
-                                                <th className="border px-2 py-1">Total amount</th>
+                                                <th className="border px-2 py-1">Previous Balance</th>
+                                                <th className="border px-2 py-1">Amount</th>
+                                                <th className="border px-2 py-1">Current Balance</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {credits.map((c, idx) => (
-                                                <tr key={idx} className="hover:bg-gray-50">
-                                                    <td className="border px-2 py-1">₹{c.creditAmount}</td>
-                                                    <td className="border px-2 py-1">₹{c.less}</td>
-                                                    <td className="border px-2 py-1">₹{c.totalAmount}</td>
+                                            {credits.map((txn, idx) => (
+                                                <tr key={`credit-${idx}`} className="hover:bg-gray-50">
+                                                    <td className="border px-2 py-1">{txn.previousBalance}</td>
+                                                    <td className="border px-2 py-1 font-semibold text-red-600">
+                                                        {txn.previousBalance} - {txn.amount}
+                                                    </td>
+                                                    <td className="border px-2 py-1">{txn.updatedBalance}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
-                                    <div className='flex justify-end pr-2 mb-4'>
-                                        <p>Total Credit paid: <span className='text-green-500 font-medium'>{credits.reduce((sum,s) => sum+s.totalAmount,0)}</span></p>
-                                    </div>
                                 </>
-                            ) : <p className='text-red-500 font-semibold'>No Credit Data</p>}
-
+                            )}
                         </div>
-                    ))}
+                    )})}
                 </>
             )}
         </section>
