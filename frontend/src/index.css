@@ -23,3 +23,33 @@ body{
     color: white !important; /* Ensures Autocomplete input text stays white */
   }
   
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-receipt, #print-receipt * {
+    visibility: visible;
+  }
+
+  #print-receipt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 58mm; /* typical receipt width */
+    font-size: 12px;
+    padding: 10px;
+    line-height: 1.4;
+  }
+
+  .print-hide {
+    display: none !important;
+  }
+
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+}
+  
+  

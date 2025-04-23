@@ -1,3 +1,4 @@
+import html2pdf from 'html2pdf.js';
 import { Autocomplete, TextField } from '@mui/material';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -5,6 +6,9 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import dayjs from "dayjs";
 import LoadingSpinner from '../components/loadingSpinner';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 
 const Ledger = () => {
     const { backendURL } = useAuth();
@@ -14,6 +18,10 @@ const Ledger = () => {
     const [ledger, setLedger] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [fromDate, setFromDate] = useState("");
+    const [showReceiptPopup, setShowReceiptPopup] = useState(false);
+    const [receiptFromDate, setReceiptFromDate] = useState("");
+    const [receiptToDate, setReceiptToDate] = useState(dayjs().format("YYYY-MM-DD")); // defaults to today
+
 
     //fetching customers
     useEffect(() => {
@@ -91,6 +99,47 @@ const Ledger = () => {
         return { totalSales: sales, totalCredits: credits };
     }, [ledger, fromDate]);
 
+    const generateReceiptPDF = () => {
+        if (!customerData) return;
+    
+        const doc = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: [80, 290], // Small paper size for receipts
+        });
+    
+        doc.setFontSize(10);
+        doc.text(`Customer: ${customerData.customerName}`, 10, 10);
+        doc.text(`Balance: ${customerData.balance}`, 10, 15);
+        doc.text("Sales", 10, 22);
+    
+        const salesRows = ledger
+            .filter(txn =>
+                txn.type === "sale" &&
+                (!receiptFromDate || dayjs(txn.createdAt).isAfter(receiptFromDate) || dayjs(txn.createdAt).isSame(receiptFromDate)) &&
+                (!receiptToDate || dayjs(txn.createdAt).isBefore(receiptToDate) || dayjs(txn.createdAt).isSame(receiptToDate))
+            )
+            .map(txn => [
+                dayjs(txn.createdAt).format("DD/MM/YY"),
+                txn.saleInfo?.lotName.split("-").slice(0, 3).join("-") || "-",
+                txn.saleInfo?.vegetableName || "-",
+                `${txn.saleInfo?.numberOfKgs}kg`,
+                `₹${txn.saleInfo?.pricePerKg}`,
+                `₹${txn.amount}`
+            ]);
+    
+        autoTable(doc, {
+            head: [["Date", "Lot", "Veg", "Qty", "Rate", "Amount"]],
+            body: salesRows,
+            startY: 25,
+            styles: { fontSize: 8, cellPadding: 1 },
+            headStyles: { fillColor: [220, 220, 220] },
+        });
+    
+        doc.save(`Receipt-${customerData.customerName}-${dayjs().format("DDMMYY")}.pdf`);
+    };
+    
+
     return (
         <section className='w-[calc(100wh-110px)] min-h-screen p-10 ml-[100px]'>
             <div className='flex gap-3 mb-6 fixed top-4 left-[140px] z-10'>
@@ -116,6 +165,14 @@ const Ledger = () => {
                     onChange={(e) => setFromDate(e.target.value)}
                     InputLabelProps={{ shrink: true }}
                 />
+                {selectedCustomerName && (
+                    <button
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                        onClick={() => setShowReceiptPopup(true)}
+                    >
+                        Print Receipt
+                    </button>
+                )}
             </div>
 
             {isLoading ? <LoadingSpinner /> : (
@@ -150,18 +207,24 @@ const Ledger = () => {
                                     <table className="w-full text-left border border-gray-300 mb-4">
                                         <thead className="bg-gray-100">
                                             <tr>
-                                                <th className="border px-2 py-1">Previous Balance</th>
+                                                <th className="border px-2 py-1">Lot</th>
+                                                <th className="border px-2 py-1">Vegetable</th>
+                                                <th className="border px-2 py-1">Number of Kgs</th>
+                                                <th className="border px-2 py-1">Price per Kg</th>
                                                 <th className="border px-2 py-1">Amount</th>
-                                                <th className="border px-2 py-1">Current Balance</th>
+                                                <th className="border px-2 py-1">Prev Bal</th>
+                                                <th className="border px-2 py-1">Curr Bal</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {sales.map((txn, idx) => (
                                                 <tr key={`sale-${idx}`} className="hover:bg-gray-50">
+                                                    <td className="border px-2 py-1">{txn.saleInfo?.lotName.split('-').slice(0,3).join('-') || "-"}</td>
+                                                    <td className="border px-2 py-1">{txn.saleInfo?.vegetableName || "-"}</td>
+                                                    <td className="border px-2 py-1">{txn.saleInfo?.numberOfKgs || "-"}</td>
+                                                    <td className="border px-2 py-1">{txn.saleInfo?.pricePerKg || "-"}</td>
+                                                    <td className="border px-2 py-1 text-green-600 font-semibold">{txn.amount}</td>
                                                     <td className="border px-2 py-1">{txn.previousBalance}</td>
-                                                    <td className="border px-2 py-1 font-semibold text-green-600">
-                                                        {txn.previousBalance} + {txn.amount}
-                                                    </td>
                                                     <td className="border px-2 py-1">{txn.updatedBalance}</td>
                                                 </tr>
                                             ))}
@@ -169,6 +232,7 @@ const Ledger = () => {
                                     </table>
                                 </>
                             )}
+
 
                             {credits.length > 0 && (
                                 <>
@@ -199,6 +263,84 @@ const Ledger = () => {
                     )})}
                 </>
             )}
+            {showReceiptPopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white w-[380px] p-4 rounded-lg shadow-lg max-h-[80vh] overflow-auto text-sm font-mono">
+                        <div className="print-hide flex gap-2 mb-3">
+                            <TextField
+                            label="From"
+                            type="date"
+                            value={receiptFromDate}
+                            onChange={(e) => setReceiptFromDate(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            />
+                            <TextField
+                            label="To"
+                            type="date"
+                            value={receiptToDate}
+                            onChange={(e) => setReceiptToDate(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                            />
+                        </div>
+
+                        {/* Printable Content */}
+                        <div id="print-receipt">
+                            <div className="border-t border-dashed mt-2 pt-2">
+                                <p><strong>Name:</strong> {customerData?.customerName}</p>
+                            </div>
+                            <div className="mt-4 border-t border-dashed pt-2 text-center font-semibold">
+                                <p>Current Balance: {customerData?.balance}</p>
+                            </div>
+                            <div className="mt-3 border-t border-dashed pt-2">
+                                <h3 className="text-center font-semibold">Sales</h3>
+                                {ledger
+                                    .filter(txn =>
+                                    txn.type === "sale" &&
+                                    (!receiptFromDate || dayjs(txn.createdAt).isAfter(receiptFromDate) || dayjs(txn.createdAt).isSame(receiptFromDate)) &&
+                                    (!receiptToDate || dayjs(txn.createdAt).isBefore(receiptToDate) || dayjs(txn.createdAt).isSame(receiptToDate))
+                                    )
+                                    .map((txn, idx) => (
+                                    <div key={idx} className="border-b border-dotted py-1">
+                                        <div className='text-[12px]'>
+                                            {dayjs(txn.createdAt).format("DD/MM/YY")} - {txn.saleInfo.lotName.split("-").slice(0,3).join('-')} - {txn.saleInfo?.vegetableName}-{txn.saleInfo?.numberOfKgs} kg x {txn.saleInfo?.pricePerKg} = ₹{txn.amount}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="print-hide mt-4 flex justify-between gap-2">
+                            <button
+                            className="bg-red-500 text-white font-medium px-4 py-1 rounded-lg"
+                            onClick={() => setShowReceiptPopup(false)}
+                            >
+                                Close
+                            </button>
+                            <button
+                                className="bg-blue-600 text-white font-medium px-4 py-1 rounded-lg"
+                                onClick={() => {
+                                    const element = document.getElementById("print-receipt");
+                                    const opt = {
+                                    margin:       0.3,
+                                    filename:     `${customerData?.customerName}_receipt.pdf`,
+                                    image:        { type: 'jpeg', quality: 0.98 },
+                                    html2canvas:  { scale: 2 },
+                                    jsPDF:        { unit: 'in', format: [2.8, 10], orientation: 'portrait' } // small paper size
+                                    };
+
+                                    html2pdf().set(opt).from(element).save();
+                                }}
+                                >
+                                Download PDF
+                                </button>
+                        </div>
+                    </div>
+                </div>
+                )}
+
+
         </section>
     );
 };

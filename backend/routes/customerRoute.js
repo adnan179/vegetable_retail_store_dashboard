@@ -4,8 +4,9 @@ const router = express.Router();
 const Customers = require("../models/customerSchema");
 const customersHistorySchema = require('../models/customersHistorySchema');
 const Sales = require("../models/salesSchema");
-const Credits = require("../models/creditSchema");
 const CustomerLedger = require("../models/customerLedgerSchema");
+const VegetableSchema = require('../models/vegetableSchema');
+
 
 router.post("/", async(req,res) => {
     try{
@@ -67,27 +68,60 @@ router.delete("/:customerName", async (req,res) => {
     }
 });
 
-router.get("/:customerName",async(req,res) =>{
+router.get("/:customerName", async (req, res) => {
     const { customerName } = req.params;
     try {
-        const customer = await Customers.findOne({customerName});
-        const ledger = await CustomerLedger.find({customerName}).sort({createdAt:-1});
-        if(!customer) {
-            console.log("Customer not found");
-            return res.status(404).json({message:"Customer not found"});
-        }
-        if(!ledger) {
-            console.log("Ledger not found");
-            return res.status(404).json({message:"Ledger not found"});
-        }
-        const sales = await Sales.find({customerName});
-        const credits = await Credits.find({customerName});
-        res.status(200).json({customer, ledger});
+        const customer = await Customers.findOne({ customerName });
+        if (!customer) return res.status(404).json({ message: "Customer not found" });
 
-    }catch(err){
-        res.status(500).json({error:err.message});
-        console.log(err.message);
+        const ledger = await CustomerLedger.find({ customerName }).sort({ createdAt: -1 });
+        const salesMap = {};
+        const vegetableMap = {};
+
+        // Gather all referenced sales
+        const saleIds = ledger.filter(l => l.type === 'sale' && l.referenceId).map(l => l.referenceId);
+        const sales = await Sales.find({ salesId: { $in: saleIds } });
+
+        // Attach sales to map
+        sales.forEach(sale => { salesMap[sale.salesId] = sale; });
+
+        // Extract shortNames
+        const shortNames = [...new Set(
+            sales.map(sale => sale.lotName?.split("-")?.[1].toLowerCase()).filter(Boolean)
+        )];
+          
+
+        // Fetch vegetable names
+        const vegetables = await VegetableSchema.find({ shortName: { $in: shortNames } });
+        const vegMap = vegetables.reduce((acc, veg) => {
+            acc[veg.shortName] = veg.vegetableName;
+            return acc;
+        }, {});
+        
+        // Append sale info to ledger
+        const enrichedLedger = ledger.map(txn => {
+            if (txn.type === 'sale' && salesMap[txn.referenceId]) {
+                const sale = salesMap[txn.referenceId];
+                const shortName = sale.lotName?.split("-")[1].toLowerCase();
+                return {
+                    ...txn._doc,
+                    saleInfo: {
+                        lotName: sale.lotName,
+                        numberOfKgs: sale.numberOfKgs,
+                        pricePerKg: sale.pricePerKg,
+                        vegetableName: vegMap[shortName]
+                    }
+                };
+            }
+            return txn;
+        });
+
+        res.status(200).json({ customer, ledger: enrichedLedger });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
 });
+
 
 module.exports = router;
