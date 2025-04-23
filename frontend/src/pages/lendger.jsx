@@ -6,8 +6,6 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import dayjs from "dayjs";
 import LoadingSpinner from '../components/loadingSpinner';
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 
 const Ledger = () => {
@@ -20,7 +18,7 @@ const Ledger = () => {
     const [fromDate, setFromDate] = useState("");
     const [showReceiptPopup, setShowReceiptPopup] = useState(false);
     const [receiptFromDate, setReceiptFromDate] = useState("");
-    const [receiptToDate, setReceiptToDate] = useState(dayjs().format("YYYY-MM-DD")); // defaults to today
+    const [receiptToDate, setReceiptToDate] = useState(""); // defaults to today
 
 
     //fetching customers
@@ -98,48 +96,7 @@ const Ledger = () => {
             });
         return { totalSales: sales, totalCredits: credits };
     }, [ledger, fromDate]);
-
-    const generateReceiptPDF = () => {
-        if (!customerData) return;
     
-        const doc = new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: [80, 290], // Small paper size for receipts
-        });
-    
-        doc.setFontSize(10);
-        doc.text(`Customer: ${customerData.customerName}`, 10, 10);
-        doc.text(`Balance: ${customerData.balance}`, 10, 15);
-        doc.text("Sales", 10, 22);
-    
-        const salesRows = ledger
-            .filter(txn =>
-                txn.type === "sale" &&
-                (!receiptFromDate || dayjs(txn.createdAt).isAfter(receiptFromDate) || dayjs(txn.createdAt).isSame(receiptFromDate)) &&
-                (!receiptToDate || dayjs(txn.createdAt).isBefore(receiptToDate) || dayjs(txn.createdAt).isSame(receiptToDate))
-            )
-            .map(txn => [
-                dayjs(txn.createdAt).format("DD/MM/YY"),
-                txn.saleInfo?.lotName.split("-").slice(0, 3).join("-") || "-",
-                txn.saleInfo?.vegetableName || "-",
-                `${txn.saleInfo?.numberOfKgs}kg`,
-                `₹${txn.saleInfo?.pricePerKg}`,
-                `₹${txn.amount}`
-            ]);
-    
-        autoTable(doc, {
-            head: [["Date", "Lot", "Veg", "Qty", "Rate", "Amount"]],
-            body: salesRows,
-            startY: 25,
-            styles: { fontSize: 8, cellPadding: 1 },
-            headStyles: { fillColor: [220, 220, 220] },
-        });
-    
-        doc.save(`Receipt-${customerData.customerName}-${dayjs().format("DDMMYY")}.pdf`);
-    };
-    
-
     return (
         <section className='w-[calc(100wh-110px)] min-h-screen p-10 ml-[100px]'>
             <div className='flex gap-3 mb-6 fixed top-4 left-[140px] z-10'>
@@ -203,7 +160,8 @@ const Ledger = () => {
 
                             {sales.length > 0 && (
                                 <>
-                                    <h4 className="text-green-600 font-semibold mb-2">Sales</h4>
+                                    <h4 className="text-green-600 text-lg font-semibold">Sales</h4>
+                                    <p className='mb-2 font-medium'>Opening Balance: {sales[0]?.previousBalance}</p>
                                     <table className="w-full text-left border border-gray-300 mb-4">
                                         <thead className="bg-gray-100">
                                             <tr>
@@ -212,7 +170,6 @@ const Ledger = () => {
                                                 <th className="border px-2 py-1">Number of Kgs</th>
                                                 <th className="border px-2 py-1">Price per Kg</th>
                                                 <th className="border px-2 py-1">Amount</th>
-                                                <th className="border px-2 py-1">Prev Bal</th>
                                                 <th className="border px-2 py-1">Curr Bal</th>
                                             </tr>
                                         </thead>
@@ -224,7 +181,6 @@ const Ledger = () => {
                                                     <td className="border px-2 py-1">{txn.saleInfo?.numberOfKgs || "-"}</td>
                                                     <td className="border px-2 py-1">{txn.saleInfo?.pricePerKg || "-"}</td>
                                                     <td className="border px-2 py-1 text-green-600 font-semibold">{txn.amount}</td>
-                                                    <td className="border px-2 py-1">{txn.previousBalance}</td>
                                                     <td className="border px-2 py-1">{txn.updatedBalance}</td>
                                                 </tr>
                                             ))}
@@ -287,27 +243,41 @@ const Ledger = () => {
 
                         {/* Printable Content */}
                         <div id="print-receipt">
+                            <div className='text-[12px] text-center w-full'>JSR</div>
                             <div className="border-t border-dashed mt-2 pt-2">
-                                <p><strong>Name:</strong> {customerData?.customerName}</p>
+                                <p className='text-[12px]'>Date: {dayjs().format("DD/MM/YYYY")}</p>
+                                <p className='text-[12px]'><strong>Name:</strong> Sri {customerData?.customerName}</p> 
                             </div>
-                            <div className="mt-4 border-t border-dashed pt-2 text-center font-semibold">
-                                <p>Current Balance: {customerData?.balance}</p>
+                            <div className="mt-4 border-t border-dashed pt-2 font-semibold">
+                                <p>Baki: {customerData?.balance}</p>
                             </div>
+                            <p>Opening balance: {ledger[ledger.length-1]?.previousBalance}</p>
                             <div className="mt-3 border-t border-dashed pt-2">
-                                <h3 className="text-center font-semibold">Sales</h3>
                                 {ledger
-                                    .filter(txn =>
-                                    txn.type === "sale" &&
-                                    (!receiptFromDate || dayjs(txn.createdAt).isAfter(receiptFromDate) || dayjs(txn.createdAt).isSame(receiptFromDate)) &&
-                                    (!receiptToDate || dayjs(txn.createdAt).isBefore(receiptToDate) || dayjs(txn.createdAt).isSame(receiptToDate))
-                                    )
+                                    .filter(txn => {
+                                        if (txn.type !== "sale") return false;
+                                        const txnDate = dayjs(txn.createdAt).startOf("day");
+                                        const from = receiptFromDate ? dayjs(receiptFromDate).startOf("day") : null;
+                                        const to = receiptToDate ? dayjs(receiptToDate).startOf("day") : null;
+
+                                        if (from && to) {
+                                        return txnDate.isSame(from) || txnDate.isSame(to) || (txnDate.isAfter(from) && txnDate.isBefore(to));
+                                        } else if (from) {
+                                        return txnDate.isSame(from) || txnDate.isAfter(from);
+                                        } else if (to) {
+                                        return txnDate.isSame(to) || txnDate.isBefore(to);
+                                        }
+                                        return true;
+                                    })
+                                    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                                     .map((txn, idx) => (
-                                    <div key={idx} className="border-b border-dotted py-1">
-                                        <div className='text-[12px]'>
-                                            {dayjs(txn.createdAt).format("DD/MM/YY")} - {txn.saleInfo.lotName.split("-").slice(0,3).join('-')} - {txn.saleInfo?.vegetableName}-{txn.saleInfo?.numberOfKgs} kg x {txn.saleInfo?.pricePerKg} = ₹{txn.amount}
+                                        <div key={idx} className="border-b border-dotted py-1">
+                                            <div className='text-[12px]'>
+                                                {dayjs(txn.createdAt).format("DD/MM/YY")} - {txn.saleInfo.lotName.split("-").slice(0, 3).join('-')} - {txn.saleInfo?.vegetableName}-{txn.saleInfo?.numberOfKgs} kg x {txn.saleInfo?.pricePerKg} = {txn.amount} + {txn.previousBalance} = {txn.updatedBalance}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+
                             </div>
                         </div>
 
@@ -324,7 +294,7 @@ const Ledger = () => {
                                     const element = document.getElementById("print-receipt");
                                     const opt = {
                                     margin:       0.3,
-                                    filename:     `${customerData?.customerName}_receipt.pdf`,
+                                    filename:     `${customerData?.customerName}_receipt_${dayjs().format("DD/MM/YYYY")}.pdf`,
                                     image:        { type: 'jpeg', quality: 0.98 },
                                     html2canvas:  { scale: 2 },
                                     jsPDF:        { unit: 'in', format: [2.8, 10], orientation: 'portrait' } // small paper size
