@@ -242,44 +242,67 @@ const Ledger = () => {
                         </div>
 
                         {/* Printable Content */}
-                        <div id="print-receipt">
-                            <div className='text-[12px] text-center w-full'>JSR</div>
-                            <div className="border-t border-dashed mt-2 pt-2">
-                                <p className='text-[12px]'>Date: {dayjs().format("DD/MM/YYYY")}</p>
-                                <p className='text-[12px]'><strong>Name:</strong> Sri {customerData?.customerName}</p> 
-                            </div>
-                            <div className="mt-4 border-t border-dashed pt-2 font-semibold">
-                                <p>Baki: {customerData?.balance}</p>
-                            </div>
-                            <p>Opening balance: {ledger[ledger.length-1]?.previousBalance}</p>
-                            <div className="mt-3 border-t border-dashed pt-2">
-                                {ledger
-                                    .filter(txn => {
-                                        if (txn.type !== "sale") return false;
-                                        const txnDate = dayjs(txn.createdAt).startOf("day");
-                                        const from = receiptFromDate ? dayjs(receiptFromDate).startOf("day") : null;
-                                        const to = receiptToDate ? dayjs(receiptToDate).startOf("day") : null;
+                        <div id="print-receipt" className="text-[12px]">
+                            <div className='text-center w-full'>JSR</div>
 
-                                        if (from && to) {
-                                        return txnDate.isSame(from) || txnDate.isSame(to) || (txnDate.isAfter(from) && txnDate.isBefore(to));
-                                        } else if (from) {
-                                        return txnDate.isSame(from) || txnDate.isAfter(from);
-                                        } else if (to) {
-                                        return txnDate.isSame(to) || txnDate.isBefore(to);
-                                        }
-                                        return true;
-                                    })
-                                    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-                                    .map((txn, idx) => (
-                                        <div key={idx} className="border-b border-dotted py-1">
-                                            <div className='text-[12px]'>
-                                                {dayjs(txn.createdAt).format("DD/MM/YY")} - {txn.saleInfo.lotName.split("-").slice(0, 3).join('-')} - {txn.saleInfo?.vegetableName}-{txn.saleInfo?.numberOfKgs} kg x {txn.saleInfo?.pricePerKg} = {txn.amount} + {txn.previousBalance} = {txn.updatedBalance}
+                            <div className="border-black border-t border-b border-dashed mt-2 py-2">
+                                <p className='justify-end flex'>{dayjs().format("DD/MM/YYYY")}</p>
+                                <p>Sri {customerData?.customerName}</p>
+                                {receiptFromDate && (
+                                    <p>{receiptFromDate} to {receiptToDate ? receiptToDate : dayjs().format("DD/MM/YYYY")}</p> 
+                                )}
+                            </div>
+
+                            <div className="mt-1 py-2">
+                                {(() => {
+                                    const filteredSales = ledger
+                                        .filter(txn => {
+                                            if (txn.type !== "sale") return false;
+                                            const txnDate = dayjs(txn.createdAt).startOf("day");
+                                            const from = receiptFromDate ? dayjs(receiptFromDate).startOf("day") : null;
+                                            const to = receiptToDate ? dayjs(receiptToDate).startOf("day") : null;
+
+                                            if (from && to) {
+                                                return txnDate.isSame(from) || txnDate.isSame(to) || (txnDate.isAfter(from) && txnDate.isBefore(to));
+                                            } else if (from) {
+                                                return txnDate.isSame(from) || txnDate.isAfter(from);
+                                            } else if (to) {
+                                                return txnDate.isSame(to) || txnDate.isBefore(to);
+                                            }
+                                            return true;
+                                        })
+                                        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+                                    let runningBalance = filteredSales[0]?.previousBalance || 0;
+
+                                    return (
+                                        <>
+                                            <p className="mt-1 flex justify-end">బాకీ: {runningBalance}</p>
+                                            <table className="w-full text-left">
+                                                <tbody>
+                                                    {filteredSales.map((txn, idx) => {
+                                                        runningBalance += txn.amount;
+                                                        return (
+                                                            <tr key={idx} className="align-top">
+                                                                <td className="pr-1">{dayjs(txn.createdAt).format("DD/MM/YY")}</td>
+                                                                <td className="pr-1">{txn.saleInfo?.vegetableName}</td>
+                                                                <td className="pr-1">{txn.saleInfo?.numberOfKgs}kg</td>
+                                                                <td className="pr-1">{txn.saleInfo?.pricePerKg}</td>
+                                                                <td className="pr-1">{txn.amount}</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                            <div className='mt-1 py-2 flex justify-end border-t border-dashed border-black text-[16px] font-semibold'>
+                                                {runningBalance}
                                             </div>
-                                        </div>
-                                    ))}
-
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
+
 
                         <div className="print-hide mt-4 flex justify-between gap-2">
                             <button
@@ -297,14 +320,14 @@ const Ledger = () => {
                                     filename:     `${customerData?.customerName}_receipt_${dayjs().format("DD/MM/YYYY")}.pdf`,
                                     image:        { type: 'jpeg', quality: 0.98 },
                                     html2canvas:  { scale: 2 },
-                                    jsPDF:        { unit: 'in', format: [2.8, 10], orientation: 'portrait' } // small paper size
+                                    jsPDF:        { unit: 'in', format: [3.5, 10], orientation: 'portrait' } // small paper size
                                     };
 
                                     html2pdf().set(opt).from(element).save();
                                 }}
                                 >
                                 Download PDF
-                                </button>
+                            </button>
                         </div>
                     </div>
                 </div>
